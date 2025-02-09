@@ -186,6 +186,48 @@
         // Track number of games played
         let gamesPlayed = 0;
 
+        // Letter names mapping
+        const letterNames = {
+            'א': 'אלף',
+            'ב': 'בית',
+            'ג': 'גימל',
+            'ד': 'דלת',
+            'ה': 'הא',
+            'ו': 'וו',
+            'ז': 'זין',
+            'ח': 'חית',
+            'ט': 'טית',
+            'י': 'יוד',
+            'כ': 'כף',
+            'ל': 'למד',
+            'מ': 'מם',
+            'נ': 'נון',
+            'ס': 'סמך',
+            'ע': 'עין',
+            'פ': 'פה',
+            'צ': 'צדי',
+            'ק': 'קוף',
+            'ר': 'ריש',
+            'ש': 'שין',
+            'ת': 'תו',
+            'ך': 'כף סופית',
+            'ם': 'מם סופית',
+            'ן': 'נון סופית',
+            'ף': 'פה סופית',
+            'ץ': 'צדי סופית'
+        };
+
+        // Play letter sound using Web Speech API
+        function playLetterSound(letter) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(letterNames[letter]);
+                utterance.lang = 'he-IL'; // Using Hebrew
+                utterance.rate = 0.9; // Slightly slower speed
+                utterance.pitch = 1.1; // Slightly higher pitch for clarity
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
         // Hebrew alphabet - basic letters
         const basicHebrewLetters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י',
                                    'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ', 'ק', 'ר',
@@ -397,6 +439,7 @@
                     if (balloon.letter === targetLetter) {
                         score++;
                         createExplosion(x, y, '0, 255, 0');
+                        playLetterSound(balloon.letter);
                         setNewTargetLetter();
                         checkWin();
                     } else {
