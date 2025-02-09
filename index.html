@@ -28,6 +28,7 @@
             max-width: 100%;
             max-height: 100vh;
             touch-action: none;
+            background: linear-gradient(180deg, #87CEEB, #e0f3ff);
         }
         #target-letter {
             position: fixed;
@@ -114,6 +115,7 @@
     </style>
 </head>
 <body>
+
     <div id="target-letter"></div>
     <div id="score">ניקוד: <span id="scoreValue">0</span>/5</div>
     <div id="victory"></div>
@@ -180,10 +182,19 @@
             }
         }
 
-        // Hebrew alphabet
-        const hebrewLetters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י',
-                              'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ', 'ק', 'ר',
-                              'ש', 'ת'];
+        // Track number of games played
+        let gamesPlayed = 0;
+
+        // Hebrew alphabet - basic letters
+        const basicHebrewLetters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י',
+                                   'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ', 'ק', 'ר',
+                                   'ש', 'ת'];
+
+        // Final form letters
+        const finalFormLetters = ['ך', 'ם', 'ן', 'ף', 'ץ'];
+
+        // Current set of letters
+        let hebrewLetters = [...basicHebrewLetters];
 
         class Balloon {
             constructor() {
@@ -288,13 +299,25 @@
         function checkWin() {
             if (score >= 5 && gameActive) {
                 gameActive = false;
+                gamesPlayed++;
+
                 const winEmoji = victoryEmojis[Math.floor(Math.random() * victoryEmojis.length)];
                 document.getElementById('victory').innerHTML = 
                     `${winEmoji}\n` +
                     `<div class="win-text">כל הכבוד!</div>` +
                     `<button id="play-again">לשחק שוב</button>`;
+
+                // After 3 games, add final form letters
+                if (gamesPlayed === 3) {
+                    hebrewLetters = [...basicHebrewLetters, ...finalFormLetters];
+                    setTimeout(() => {
+                        alert('מצוין! עכשיו נוספו האותיות הסופיות: ך ם ן ף ץ');
+                    }, 1000);
+                }
+
                 document.getElementById('victory').style.display = 'block';
                 document.getElementById('play-again').addEventListener('click', resetGame);
+                
                 // Create victory particles
                 for (let i = 0; i < 100; i++) {
                     setTimeout(() => {
