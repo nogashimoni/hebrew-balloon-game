@@ -200,8 +200,13 @@
         }
 
         // Play a gentle magical sound
-        function playMagicalSound() {
+        async function playMagicalSound() {
             if (!audioContext) return;
+
+            // Resume audio context if it was suspended
+            if (audioContext.state === 'suspended') {
+                await audioContext.resume();
+            }
 
             const duration = 0.5;
             const now = audioContext.currentTime;
@@ -328,7 +333,7 @@
             reset() {
                 this.x = Math.random() * (canvas.width - 60) + 30;
                 this.y = canvas.height + 30;
-                this.speed = Math.random() * 0.8 + 0.3;
+                this.baseSpeed = Math.random() * 0.8 + 0.3;
                 this.size = Math.random() * 20 + 45;
                 
                 // 30% chance to show the target letter
@@ -380,7 +385,10 @@
             }
 
             update() {
-                this.y -= this.speed;
+                // Speed increases by 10% for each emoji after 3, up to a maximum of 50% increase
+                const speedMultiplier = collectedEmojis.size <= 3 ? 1 : 
+                    Math.min(1.5, 1 + ((collectedEmojis.size - 3) * 0.1));
+                this.y -= this.baseSpeed * speedMultiplier;
                 if (this.y < -50) {
                     this.reset();
                 }
@@ -460,7 +468,7 @@
                     if (nextEmptySlot) {
                         nextEmptySlot.textContent = winEmoji;
                         nextEmptySlot.style.background = 'rgba(255,255,255,0.4)';
-                        playMagicalSound();
+                        playMagicalSound().catch(console.error);
                     }
                     
                     // Check if all 9 emojis are collected
