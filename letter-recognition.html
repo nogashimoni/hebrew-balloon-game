@@ -127,6 +127,7 @@
         <div class="options-container" id="options"></div>
     </div>
 
+    <script src="js/rewards.js"></script>
     <script>
         const hebrewLetters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י',
                               'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ', 'ק', 'ר',
@@ -308,6 +309,9 @@
                 <button id="resetButton" class="option-button">שחק שוב</button>
             `;
             document.getElementById('resetButton').onclick = resetGame;
+            
+            // Show reward modal for good scores
+            showRewardModal(score, totalQuestions);
         }
 
         // Make resetGame available globally

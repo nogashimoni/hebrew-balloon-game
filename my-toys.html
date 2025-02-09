@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<head>
+    <title>הצעצועים שלי</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧸</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(to bottom, #E6E6FA, #F0F8FF);
+            font-family: 'Fredoka', sans-serif;
+            text-align: center;
+            direction: rtl;
+        }
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        .back-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .toys-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            width: 90%;
+            margin: 60px auto;
+        }
+        .toy-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+        .toy-card:hover {
+            transform: translateY(-5px);
+        }
+        .toy-image {
+            width: 150px;
+            height: 150px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+        .toy-name {
+            font-size: 18px;
+            color: #333;
+            margin: 10px 0;
+        }
+        .toy-date {
+            font-size: 14px;
+            color: #666;
+        }
+        .empty-message {
+            font-size: 24px;
+            color: #666;
+            margin-top: 100px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <button onclick="window.location.href='index.html'" class="back-button" title="חזרה לחדר המשחקים">⬅️</button>
+    <h1>הצעצועים שלי</h1>
+    <div class="toys-container" id="toysContainer"></div>
+
+    <script>
+        // Load toys from localStorage
+        function loadToys() {
+            const toys = JSON.parse(localStorage.getItem('myToys') || '[]');
+            const container = document.getElementById('toysContainer');
+            
+            if (toys.length === 0) {
+                container.innerHTML = '<div class="empty-message">עדיין אין לך צעצועים. שחק במשחקים כדי לזכות בפרסים! 🎮</div>';
+                return;
+            }
+
+            container.innerHTML = toys.map(toy => `
+                <div class="toy-card">
+                    <img src="${toy.image}" alt="${toy.name}" class="toy-image">
+                    <div class="toy-name">${toy.name}</div>
+                    <div class="toy-date">התקבל ב-${new Date(toy.date).toLocaleDateString('he-IL')}</div>
+                </div>
+            `).join('');
+        }
+
+        // Initialize
+        loadToys();
+    </script>
+</body>
+</html>
