@@ -165,6 +165,46 @@
         let score = 0;
         let targetLetter = '';
         let collectedEmojis = new Set();
+        let audioContext = null;
+
+        // Initialize audio context on first user interaction
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        // Play a gentle magical sound
+        function playMagicalSound() {
+            if (!audioContext) return;
+
+            const duration = 0.5;
+            const now = audioContext.currentTime;
+
+            // Create oscillators for a magical chord
+            const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5
+            frequencies.forEach((freq, i) => {
+                const osc = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                // Use sine wave for a soft sound
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+
+                // Set volume envelope
+                gainNode.gain.setValueAtTime(0, now);
+                gainNode.gain.linearRampToValueAtTime(0.1 / frequencies.length, now + 0.1);
+                gainNode.gain.linearRampToValueAtTime(0, now + duration);
+
+                // Connect nodes
+                osc.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                // Start and stop
+                osc.start(now);
+                osc.stop(now + duration);
+            });
+        }
         let gameActive = true;
         let particles = [];
 
@@ -202,7 +242,7 @@
         // Letter names mapping with niqqud
         const letterNames = {
             'א': 'אָלֶף',
-            'ב': 'בֵית',
+            'ב': 'בֵּית',
             'ג': 'גִימֶל',
             'ד': 'דָלֶת',
             'ה': 'הֵא',
@@ -218,7 +258,7 @@
             'ס': 'סָמֶך',
             'ע': 'עַיִן',
             'פ': 'פֵה',
-            'צ': 'צַדִי',
+            'צ': 'צַדִיק',
             'ק': 'קוֹף',
             'ר': 'רֵיש',
             'ש': 'שִין',
@@ -227,7 +267,7 @@
             'ם': 'מֵם סוֹפִית',
             'ן': 'נוּן סוֹפִית',
             'ף': 'פֵה סוֹפִית',
-            'ץ': 'צַדִי סוֹפִית'
+            'ץ': 'צַדִיק סוֹפִית'
         };
 
         // Play letter sound using Web Speech API
@@ -395,6 +435,7 @@
                     if (nextEmptySlot) {
                         nextEmptySlot.textContent = winEmoji;
                         nextEmptySlot.style.background = 'rgba(255,255,255,0.4)';
+                        playMagicalSound();
                     }
                     
                     // Check if all 9 emojis are collected
@@ -505,8 +546,14 @@
             });
         }
 
-        canvas.addEventListener('click', handleTouch);
-        canvas.addEventListener('touchstart', handleTouch);
+        canvas.addEventListener('click', (e) => {
+            initAudio(); // Initialize audio on first click
+            handleTouch(e);
+        });
+        canvas.addEventListener('touchstart', (e) => {
+            initAudio(); // Initialize audio on first touch
+            handleTouch(e);
+        });
         
         setNewTargetLetter();
         animate();
