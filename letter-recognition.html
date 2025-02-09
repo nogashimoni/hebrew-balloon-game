@@ -120,20 +120,6 @@
             margin: 20px;
             color: #333;
         }
-        .progress-container {
-            width: 80%;
-            height: 20px;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 10px;
-            margin: 20px auto;
-            overflow: hidden;
-        }
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(to right, #FFB6C1, #FF69B4);
-            width: 0%;
-            transition: width 0.3s ease;
-        }
         @media (max-width: 600px) {
             .target-letter {
                 font-size: 80px;
@@ -163,10 +149,8 @@
 
     <div class="game-container">
         <h1>האזינו לשם האות ובחרו את האות הנכונה</h1>
-        <div class="score">ניקוד: <span id="scoreValue">0</span></div>
-        <div class="progress-container">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
+        <div class="score">נקודות: <span id="scoreValue">0</span>/5</div>
+
         <button id="playSound" class="option-button" style="font-size: 32px; margin: 20px auto; display: block; min-width: 200px; background: white; border: 3px solid #FFB6C1; cursor: pointer;">🔊</button>
         <div class="options-container" id="options"></div>
     </div>
@@ -219,8 +203,7 @@
 
         let score = 0;
         let currentLetter = '';
-        let questionsAnswered = 0;
-        const totalQuestions = 10;
+
         let collectedEmojis = new Set();
         
         const victoryEmojis = [
@@ -308,10 +291,7 @@
             osc.stop(now + duration);
         }
 
-        function updateProgress() {
-            const progress = (questionsAnswered / totalQuestions) * 100;
-            document.getElementById('progressBar').style.width = `${progress}%`;
-        }
+
 
         function getRandomLetter() {
             return hebrewLetters[Math.floor(Math.random() * hebrewLetters.length)];
@@ -343,27 +323,25 @@
                         button.classList.add('correct');
                     }
                 });
+                // Reduce score for wrong answer
+                score = Math.max(0, score - 1);
+                document.getElementById('scoreValue').textContent = score;
+            } else {
+                score++;
+                document.getElementById('scoreValue').textContent = score;
+                if (score >= 5) {
+                    document.querySelector('.game-container').style.display = 'none';
+                    endGame();
+                    return;
+                }
             }
 
             // Play sound
             playSound(isCorrect);
 
-            if (isCorrect) {
-                score++;
-                document.getElementById('scoreValue').textContent = score;
-            }
-
-            questionsAnswered++;
-            updateProgress();
-
-            // Wait and then show next question or end game
+            // Wait and then show next question
             setTimeout(() => {
-                if (questionsAnswered < totalQuestions) {
-                    setNewQuestion();
-                } else {
-                    document.querySelector('.game-container').style.display = 'none';
-                    endGame();
-                }
+                setNewQuestion();
             }, 1000);
         }
 
@@ -388,6 +366,7 @@
                 button.className = 'option-button';
                 button.textContent = option;
                 button.onclick = handleOptionClick;
+                button.style.fontSize = '48px';
                 optionsContainer.appendChild(button);
             });
         }
@@ -397,11 +376,11 @@
             document.getElementById('victory').innerHTML = 
                 `${winEmoji}\n` +
                 `<div class="win-text">כל הכבוד!</div>` +
-                `<div class="score">הצלחת לזהות ${score} מתוך ${totalQuestions} אותיות</div>` +
+                `<div class="score">הצלחת להגיע ל-5 נקודות!</div>` +
                 `<button id="resetButton" class="option-button">שחק שוב</button>`;
             
-            // Add emoji to treasure box if score is good (8 or more correct)
-            if (score >= 8 && !collectedEmojis.has(winEmoji)) {
+            // Add emoji to treasure box after reaching 5 points
+            if (!collectedEmojis.has(winEmoji)) {
                 collectedEmojis.add(winEmoji);
                 // Replace the star with the won emoji
                 const emptySlots = document.querySelectorAll('#treasureBox div');
@@ -428,9 +407,7 @@
         // Make resetGame available globally
         window.resetGame = function() {
             score = 0;
-            questionsAnswered = 0;
             document.getElementById('scoreValue').textContent = score;
-            updateProgress();
             setNewQuestion();
             document.getElementById('victory').style.display = 'none';
             document.querySelector('.game-container').style.display = 'block';
