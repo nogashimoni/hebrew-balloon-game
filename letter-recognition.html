@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <head>
     <title>זיהוי אותיות</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔊</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -22,6 +22,36 @@
             font-family: 'Fredoka', sans-serif;
             text-align: center;
             direction: rtl;
+        }
+        #treasureBox {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            width: fit-content;
+        }
+        #victory {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,255,255,0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            color: #333;
+            font-size: 24px;
+            text-align: center;
+            z-index: 1000;
+        }
+        .win-text {
+            font-size: 32px;
+            margin: 10px 0;
+            color: #2196F3;
         }
         .back-button {
             position: fixed;
@@ -117,6 +147,20 @@
 <body>
     <button onclick="window.location.href='index.html'" class="back-button" title="חזרה לחדר המשחקים">⬅️</button>
     
+    <div id="treasureBox">
+        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
+        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
+        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
+        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
+        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
+        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
+        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
+        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
+        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
+    </div>
+
+    <div id="victory"></div>
+
     <div class="game-container">
         <h1>האזינו לשם האות ובחרו את האות הנכונה</h1>
         <div class="score">ניקוד: <span id="scoreValue">0</span></div>
@@ -177,6 +221,53 @@
         let currentLetter = '';
         let questionsAnswered = 0;
         const totalQuestions = 10;
+        let collectedEmojis = new Set();
+        
+        const victoryEmojis = [
+            '🦄', // unicorn
+            '🦕', // dinosaur
+            '🎈', // balloon
+            '🎨', // art palette
+            '🎭', // performing arts
+            '🎪', // circus tent
+            '🎡', // ferris wheel
+            '🎢', // roller coaster
+            '🎠', // carousel horse
+            '🎮', // video game
+            '🎲', // game die
+            '🎯', // direct hit
+            '🎊'  // confetti ball
+        ];
+
+        function getRandomEmojis() {
+            const shuffled = [...victoryEmojis].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, 3);
+        }
+
+        function playMagicalSound() {
+            return new Promise((resolve, reject) => {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.2);
+
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+
+                oscillator.onended = () => {
+                    resolve();
+                };
+            });
+        }
         let audioContext = null;
 
         function initAudio() {
@@ -270,6 +361,7 @@
                 if (questionsAnswered < totalQuestions) {
                     setNewQuestion();
                 } else {
+                    document.querySelector('.game-container').style.display = 'none';
                     endGame();
                 }
             }, 1000);
@@ -301,14 +393,36 @@
         }
 
         function endGame() {
-            const gameContainer = document.querySelector('.game-container');
-            gameContainer.innerHTML = `
-                <h1>כל הכבוד!</h1>
-                <div class="score">הצלחת לזהות ${score} מתוך ${totalQuestions} אותיות</div>
-                <button id="resetButton" class="option-button">שחק שוב</button>
-            `;
-            document.getElementById('resetButton').onclick = resetGame;
+            const winEmoji = victoryEmojis[Math.floor(Math.random() * victoryEmojis.length)];
+            document.getElementById('victory').innerHTML = 
+                `${winEmoji}\n` +
+                `<div class="win-text">כל הכבוד!</div>` +
+                `<div class="score">הצלחת לזהות ${score} מתוך ${totalQuestions} אותיות</div>` +
+                `<button id="resetButton" class="option-button">שחק שוב</button>`;
+            
+            // Add emoji to treasure box if score is good (8 or more correct)
+            if (score >= 8 && !collectedEmojis.has(winEmoji)) {
+                collectedEmojis.add(winEmoji);
+                // Replace the star with the won emoji
+                const emptySlots = document.querySelectorAll('#treasureBox div');
+                const nextEmptySlot = emptySlots[collectedEmojis.size - 1];
+                if (nextEmptySlot) {
+                    nextEmptySlot.textContent = winEmoji;
+                    nextEmptySlot.style.background = 'rgba(255,255,255,0.4)';
+                    playMagicalSound().catch(console.error);
+                }
+                
+                // Check if all 9 emojis are collected
+                if (collectedEmojis.size >= 9) {
+                    setTimeout(() => {
+                        alert('🎉 מזל טוב! אספת את כל האוצרות! 🎉');
+                        resetGame();
+                    }, 1000);
+                }
+            }
 
+            document.getElementById('victory').style.display = 'block';
+            document.getElementById('resetButton').onclick = resetGame;
         }
 
         // Make resetGame available globally
@@ -318,6 +432,8 @@
             document.getElementById('scoreValue').textContent = score;
             updateProgress();
             setNewQuestion();
+            document.getElementById('victory').style.display = 'none';
+            document.querySelector('.game-container').style.display = 'block';
         }
 
         // Initialize game
