@@ -202,7 +202,7 @@
                 this.reset();
                 this.y = canvas.height + 30; // Start below the canvas
                 this.letter = hebrewLetters[Math.floor(Math.random() * hebrewLetters.length)];
-                this.color = `hsl(${Math.random() * 360}, 55%, 85%)`;
+                this.setRandomColor();
             }
 
             reset() {
@@ -211,7 +211,21 @@
                 this.speed = Math.random() * 0.8 + 0.3;
                 this.size = Math.random() * 20 + 45;
                 this.letter = hebrewLetters[Math.floor(Math.random() * hebrewLetters.length)];
-                this.color = `hsl(${Math.random() * 360}, 55%, 85%)`;
+                this.setRandomColor();
+            }
+
+            setRandomColor() {
+                const colors = [
+                    '#4DA9FF', // bright blue
+                    '#89C4FF', // light blue
+                    '#FFD700', // bright yellow
+                    '#FFE44D', // light yellow
+                    '#FF69B4', // bright pink
+                    '#FF99CC', // light pink
+                    '#32CD32', // bright green
+                    '#90EE90'  // light green
+                ];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
             }
 
             draw() {
