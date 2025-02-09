@@ -120,6 +120,18 @@
     <div id="target-letter"></div>
     <div id="score">ניקוד: <span id="scoreValue">0</span>/5</div>
     <div id="victory"></div>
+    <div id="treasureBox" style="position: fixed; bottom: 20px; left: 20px; background: linear-gradient(135deg, #89C4FF, #4DA9FF); width: 120px; height: 120px; padding: 10px; border-radius: 15px; box-shadow: 0 0 20px rgba(77, 169, 255, 0.3); border: 3px solid #FFE44D; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;">
+        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
+        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
+        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
+        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
+        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
+        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
+        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
+        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
+        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
+        <div id="collectedEmojis" style="display: none;"></div>
+    </div>
     <canvas id="gameCanvas"></canvas>
 
     <script>
@@ -152,6 +164,7 @@
         const targetLetterElement = document.getElementById('target-letter');
         let score = 0;
         let targetLetter = '';
+        let collectedEmojis = new Set();
         let gameActive = true;
         let particles = [];
 
@@ -193,7 +206,7 @@
             'ג': 'גִימֶל',
             'ד': 'דָלֶת',
             'ה': 'הֵא',
-            'ו': 'וָו',
+            'ו': 'וָוְ',
             'ז': 'זַיִן',
             'ח': 'חֵת',
             'ט': 'טֵת',
@@ -209,7 +222,7 @@
             'ק': 'קוֹף',
             'ר': 'רֵיש',
             'ש': 'שִין',
-            'ת': 'תָו',
+            'ת': 'תָף',
             'ך': 'כַף סוֹפִית',
             'ם': 'מֵם סוֹפִית',
             'ן': 'נוּן סוֹפִית',
@@ -372,6 +385,26 @@
                     `${winEmoji}\n` +
                     `<div class="win-text">כל הכבוד!</div>` +
                     `<button id="play-again">לשלב הבא</button>`;
+                
+                // Add emoji to treasure box if not already collected
+                if (!collectedEmojis.has(winEmoji)) {
+                    collectedEmojis.add(winEmoji);
+                    // Replace the star with the won emoji
+                    const emptySlots = document.querySelectorAll('#treasureBox div:not(#collectedEmojis)');
+                    const nextEmptySlot = emptySlots[collectedEmojis.size - 1];
+                    if (nextEmptySlot) {
+                        nextEmptySlot.textContent = winEmoji;
+                        nextEmptySlot.style.background = 'rgba(255,255,255,0.4)';
+                    }
+                    
+                    // Check if all 9 emojis are collected
+                    if (collectedEmojis.size >= 9) {
+                        setTimeout(() => {
+                            alert('🎉 מזל טוב! אספת את כל האוצרות! 🎉');
+                            resetGame();
+                        }, 1000);
+                    }
+                }
 
                 // After 3 games, add final form letters
                 if (gamesPlayed === 3) {
@@ -398,6 +431,16 @@
         function resetGame() {
             score = 0;
             scoreElement.textContent = '0';
+            // Don't clear collected emojis unless we have all 9
+            if (collectedEmojis.size >= 9) {
+                collectedEmojis.clear();
+                // Reset all slots to stars
+                const slots = document.querySelectorAll('#treasureBox div:not(#collectedEmojis)');
+                slots.forEach(slot => {
+                    slot.textContent = '⭐';
+                    slot.style.background = 'rgba(255,255,255,0.2)';
+                });
+            }
             gameActive = true;
             particles = [];
             document.getElementById('victory').style.display = 'none';
@@ -447,15 +490,16 @@
                 if (balloon.checkClick(x, y)) {
                     if (balloon.letter === targetLetter) {
                         score++;
+                        scoreElement.textContent = score;
                         createExplosion(x, y, '0, 255, 0');
                         playLetterSound(balloon.letter);
                         setNewTargetLetter();
                         checkWin();
                     } else {
                         score = Math.max(0, score - 1);
+                        scoreElement.textContent = score;
                         createExplosion(x, y, '255, 0, 0');
                     }
-                    scoreElement.textContent = score;
                     balloon.reset();
                 }
             });
