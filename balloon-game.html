@@ -484,20 +484,20 @@
                 if (gamesPlayed === 3) {
                     setTimeout(() => {
                         hebrewLetters = [...basicHebrewLetters, ...finalFormLetters];
-                        alert('מצוין! עכשיו נוספו האותיות הסופיות: ך ם ן ף ץ');
+                        alert('מצוין! עכשיו נוספו גם האותיות הסופיות');
                     }, 2000);
                 }
 
                 document.getElementById('victory').style.display = 'block';
                 document.getElementById('play-again').addEventListener('click', resetGame);
                 
-                // Create victory particles
-                for (let i = 0; i < 100; i++) {
+                // Create victory particles - fewer particles, faster animation
+                for (let i = 0; i < 30; i++) {
                     setTimeout(() => {
                         const x = Math.random() * canvas.width;
                         const y = Math.random() * canvas.height;
                         createExplosion(x, y, '255, 215, 0');
-                    }, i * 50);
+                    }, i * 30);
                 }
             }
         }
