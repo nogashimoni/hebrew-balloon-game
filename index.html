@@ -309,10 +309,10 @@
 
                 // After 3 games, add final form letters
                 if (gamesPlayed === 3) {
-                    hebrewLetters = [...basicHebrewLetters, ...finalFormLetters];
                     setTimeout(() => {
+                        hebrewLetters = [...basicHebrewLetters, ...finalFormLetters];
                         alert('מצוין! עכשיו נוספו האותיות הסופיות: ך ם ן ף ץ');
-                    }, 1000);
+                    }, 2000);
                 }
 
                 document.getElementById('victory').style.display = 'block';
