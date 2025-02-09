@@ -97,7 +97,7 @@ function showEmojiSelection(collectedEmojis) {
 
 // Function to check if all emojis are collected
 function checkAllEmojisCollected(collectedEmojis) {
-    if (collectedEmojis.size >= 9) {
+    if (collectedEmojis.size >= 2) {
         showEmojiSelection(collectedEmojis);
         return true;
     }
