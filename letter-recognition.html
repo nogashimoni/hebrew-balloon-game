@@ -404,14 +404,14 @@
                 `${winEmoji}\n` +
                 `<div class="win-text">כל הכבוד!</div>` +
                 `<div class="score">הצלחת להגיע ל-5 נקודות!</div>` +
-                `<button id="resetButton" class="option-button">שחק שוב</button>`;
+                `<button id="resetButton" class="option-button" style="display: block; margin: 15px auto; padding: 10px 30px; font-size: 20px; background: #FFB6C1; border: none; border-radius: 25px; color: white; cursor: pointer;">להמשיך</button>`;
             
             // Add emoji to treasure box after reaching 5 points
             if (!collectedEmojis.has(winEmoji)) {
                 collectedEmojis.add(winEmoji);
-                // Replace the star with the won emoji
-                const emptySlots = document.querySelectorAll('#treasureBox div');
-                const nextEmptySlot = emptySlots[collectedEmojis.size - 1];
+                // Replace the star with the won emoji - fill from right to left
+                const emptySlots = Array.from(document.querySelectorAll('#treasureBox div')).reverse();
+                const nextEmptySlot = emptySlots.find(slot => slot.textContent === '⭐');
                 if (nextEmptySlot) {
                     nextEmptySlot.textContent = winEmoji;
                     nextEmptySlot.style.background = 'rgba(255,255,255,0.4)';

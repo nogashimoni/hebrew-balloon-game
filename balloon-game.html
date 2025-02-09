@@ -3,6 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <head>
     <title>בלוני אותיות</title>
+    <script src="emoji-selection.js"></script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎈</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
     <style>
@@ -470,12 +471,10 @@
                         playMagicalSound().catch(console.error);
                     }
                     
-                    // Check if all 9 emojis are collected
-                    if (collectedEmojis.size >= 9) {
-                        setTimeout(() => {
-                            alert('🎉 מזל טוב! אספת את כל האוצרות! 🎉');
-                            resetGame();
-                        }, 1000);
+                    // Check if enough emojis are collected to show selection screen
+                    if (checkAllEmojisCollected(collectedEmojis)) {
+                        document.getElementById('victory').style.display = 'none';
+                        return;
                     }
                 }
 
