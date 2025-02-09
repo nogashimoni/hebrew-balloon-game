@@ -159,7 +159,6 @@
     </div>
     <canvas id="gameCanvas"></canvas>
 
-    <script src="js/rewards.js"></script>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -488,8 +487,6 @@
                     }, 2000);
                 }
 
-                // Show reward modal for perfect score
-                showRewardModal(score, 5);
 
                 document.getElementById('victory').style.display = 'block';
                 document.getElementById('play-again').addEventListener('click', resetGame);
