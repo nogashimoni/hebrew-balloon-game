@@ -4,6 +4,7 @@
 <head>
     <title>Hebrew Balloon Pop</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎈</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
     <style>
         * {
             touch-action: manipulation;
@@ -18,11 +19,11 @@
             align-items: center;
             height: 100vh;
             background: linear-gradient(to bottom, #87CEEB, #E0F7FA);
-            font-family: Arial, sans-serif;
+            font-family: 'Fredoka', sans-serif;
             overflow: hidden;
         }
         canvas {
-            border: 1px solid #333;
+            border: 1px solid white;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.2);
             max-width: 100%;
@@ -201,7 +202,7 @@
                 this.reset();
                 this.y = canvas.height + 30; // Start below the canvas
                 this.letter = hebrewLetters[Math.floor(Math.random() * hebrewLetters.length)];
-                this.color = `hsl(${Math.random() * 360}, 70%, 70%)`;
+                this.color = `hsl(${Math.random() * 360}, 55%, 85%)`;
             }
 
             reset() {
@@ -210,26 +211,26 @@
                 this.speed = Math.random() * 0.8 + 0.3;
                 this.size = Math.random() * 20 + 45;
                 this.letter = hebrewLetters[Math.floor(Math.random() * hebrewLetters.length)];
-                this.color = `hsl(${Math.random() * 360}, 70%, 70%)`;
+                this.color = `hsl(${Math.random() * 360}, 55%, 85%)`;
             }
 
             draw() {
-                // Draw balloon
+                // Draw balloon - make it rounder
                 ctx.beginPath();
                 ctx.fillStyle = this.color;
-                ctx.ellipse(this.x, this.y, this.size * 0.7, this.size, 0, 0, Math.PI * 2);
+                ctx.ellipse(this.x, this.y, this.size * 0.8, this.size * 0.8, 0, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.stroke();
 
                 // Draw string
                 ctx.beginPath();
-                ctx.moveTo(this.x, this.y + this.size);
-                ctx.lineTo(this.x, this.y + this.size + 20);
+                ctx.moveTo(this.x, this.y + this.size * 0.8);
+                ctx.lineTo(this.x, this.y + this.size * 0.8 + 15);
                 ctx.stroke();
 
                 // Draw letter
                 ctx.fillStyle = 'black';
-                ctx.font = `${this.size/2}px Arial`;
+                ctx.font = `${this.size/2}px Fredoka`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(this.letter, this.x, this.y);
