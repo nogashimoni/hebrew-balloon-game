@@ -272,7 +272,7 @@
         // Letter names mapping with niqqud
         const letterNames = {
             'א': 'אָלֶף',
-            'ב': 'בֵּית',
+            'ב': 'בֵּית',
             'ג': 'גִימֶל',
             'ד': 'דָלֶת',
             'ה': 'הֵא',
@@ -300,7 +300,6 @@
             'ץ': 'צַדִיק סוֹפִית'
         };
 
-        // Play letter sound using Web Speech API
         function playLetterSound(letter) {
             if ('speechSynthesis' in window) {
                 const utterance = new SpeechSynthesisUtterance(letterNames[letter]);
