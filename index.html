@@ -1,562 +1,213 @@
 <!DOCTYPE html>
-<html>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<html dir="rtl">
 <head>
-    <title>Hebrew Balloon Pop</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎈</text></svg>">
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>משחקי עברית</title>
     <style>
-        * {
-            touch-action: manipulation;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-        }
         body {
             margin: 0;
+            padding: 0;
+            min-height: 100vh;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            height: 100vh;
-            background: linear-gradient(to bottom, #87CEEB, #E0F7FA);
-            font-family: 'Fredoka', sans-serif;
-            overflow: hidden;
-        }
-        canvas {
-            border: 1px solid white;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
-            max-width: 100%;
-            max-height: 100vh;
-            touch-action: none;
-            background: linear-gradient(180deg, #87CEEB, #e0f3ff);
-        }
-        #target-letter {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: min(96px, 15vh);
-            color: #333;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 15px 30px;
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.15);
-            pointer-events: none;
-            z-index: 2;
-        }
-        #score {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            font-size: min(24px, 4vh);
-            color: #333;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 8px 16px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            pointer-events: none;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #89CFF0, #4DA9FF);
             direction: rtl;
-            z-index: 1;
         }
-        #victory {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 48px;
-            color: #333;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 20px 40px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+
+        .container {
             text-align: center;
-            animation: victory-pulse 2s infinite;
-            direction: rtl;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            max-width: 90%;
+            width: 600px;
+            margin: 20px;
         }
-        .win-text {
-            font-size: 36px;
-            margin: 20px 0;
-            font-weight: bold;
+
+        h1 {
+            color: #2C3E50;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
-        #play-again {
-            font-size: 24px;
+
+        .welcome-form {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .game-selection {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        input {
+            font-size: 1.2em;
             padding: 10px 20px;
-            background: #4CAF50;
-            color: white;
+            border: 2px solid #4DA9FF;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #2980B9;
+            box-shadow: 0 0 10px rgba(77, 169, 255, 0.3);
+        }
+
+        .button {
+            font-size: 1.2em;
+            padding: 15px 30px;
             border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        #play-again:hover {
-            background: #45a049;
-        }
-        @keyframes victory-pulse {
-            0% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.1); }
-            100% { transform: translate(-50%, -50%) scale(1); }
-        }
-        #play-again {
-            display: block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 24px;
-            background: #4CAF50;
+            border-radius: 15px;
+            background: linear-gradient(45deg, #4DA9FF, #2980B9);
             color: white;
-            border: none;
-            border-radius: 5px;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            margin: 10px;
+            width: 80%;
+            max-width: 300px;
         }
-        #play-again:hover {
-            background: #45a049;
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(41, 128, 185, 0.3);
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 10px;
+            width: 80%;
+            max-width: 300px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #2C3E50;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .game-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .player-name {
+            font-size: 1.5em;
+            color: #2980B9;
+            margin: 10px 0;
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        /* Confetti effect */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #f0f;
+            position: absolute;
+            top: -10px;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h1 id="mainTitle">ברוכים הבאים למשחקי עברית</h1>
+        
+        <div class="welcome-form fade-in" style="display: flex;">
+            <input type="text" id="playerName" placeholder="איך קוראים לך?" maxlength="20">
+            <button class="button" onclick="startGames()">בואו נתחיל!</button>
+        </div>
 
-    <div id="target-letter"></div>
-    <div id="score">ניקוד: <span id="scoreValue">0</span>/5</div>
-    <div id="victory"></div>
-    <div id="treasureBox" style="position: fixed; bottom: 20px; left: 20px; background: linear-gradient(135deg, #89C4FF, #4DA9FF); width: 120px; height: 120px; padding: 10px; border-radius: 15px; box-shadow: 0 0 20px rgba(77, 169, 255, 0.3); border: 3px solid #FFE44D; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;">
-        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
-        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
-        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
-        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
-        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
-        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
-        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
-        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
-        <div style="font-size: 24px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; aspect-ratio: 1;">⭐</div>
-        <div id="collectedEmojis" style="display: none;"></div>
+        <div class="player-name"></div>
+
+        <div class="game-selection">
+            <a href="balloon-game.html" class="game-card">
+                <div class="game-icon">🎈</div>
+                <h3>בלוני אותיות</h3>
+            </a>
+            <!-- More games will be added here -->
+        </div>
     </div>
-    <canvas id="gameCanvas"></canvas>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
-        function resizeCanvas() {
-            const windowWidth = window.innerWidth;
-            const windowHeight = window.innerHeight;
-            const aspectRatio = 4/3;
-
-            let canvasWidth = Math.min(windowWidth * 0.95, 800);
-            let canvasHeight = canvasWidth / aspectRatio;
-
-            // If height is too big, constrain by height instead
-            if (canvasHeight > windowHeight * 0.7) {
-                canvasHeight = windowHeight * 0.7;
-                canvasWidth = canvasHeight * aspectRatio;
-            }
-
-            canvas.style.width = canvasWidth + 'px';
-            canvas.style.height = canvasHeight + 'px';
-            canvas.width = canvasWidth;
-            canvas.height = canvasHeight;
-        }
-
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-        const scoreElement = document.getElementById('scoreValue');
-        const targetLetterElement = document.getElementById('target-letter');
-        let score = 0;
-        let targetLetter = '';
-        let collectedEmojis = new Set();
-        let audioContext = null;
-
-        // Initialize audio context on first user interaction
-        function initAudio() {
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        // Store player name in localStorage
+        function startGames() {
+            const playerName = document.getElementById('playerName').value.trim();
+            if (playerName) {
+                localStorage.setItem('playerName', playerName);
+                showGameSelection(playerName);
+                createConfetti();
+            } else {
+                alert('אנא הכניסו את השם שלכם');
             }
         }
 
-        // Play a gentle magical sound
-        function playMagicalSound() {
-            if (!audioContext) return;
-
-            const duration = 0.5;
-            const now = audioContext.currentTime;
-
-            // Create oscillators for a magical chord
-            const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5
-            frequencies.forEach((freq, i) => {
-                const osc = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                // Use sine wave for a soft sound
-                osc.type = 'sine';
-                osc.frequency.value = freq;
-
-                // Set volume envelope
-                gainNode.gain.setValueAtTime(0, now);
-                gainNode.gain.linearRampToValueAtTime(0.1 / frequencies.length, now + 0.1);
-                gainNode.gain.linearRampToValueAtTime(0, now + duration);
-
-                // Connect nodes
-                osc.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-
-                // Start and stop
-                osc.start(now);
-                osc.stop(now + duration);
-            });
+        // Show game selection and welcome message
+        function showGameSelection(playerName) {
+            document.querySelector('.welcome-form').style.display = 'none';
+            document.querySelector('.player-name').style.display = 'block';
+            document.querySelector('.player-name').textContent = `שלום ${playerName}!`;
+            document.querySelector('.game-selection').style.display = 'flex';
+            document.getElementById('mainTitle').textContent = `חדר המשחקים של ${playerName}`;
         }
-        let gameActive = true;
-        let particles = [];
 
-        class Particle {
-            constructor(x, y, color) {
-                this.x = x;
-                this.y = y;
-                this.color = color;
-                this.size = Math.random() * 10 + 5;
-                this.speedX = Math.random() * 6 - 3;
-                this.speedY = Math.random() * 6 - 3;
-                this.gravity = 0.1;
-                this.life = 1;
-                this.decay = Math.random() * 0.02 + 0.02;
-            }
-
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                this.speedY += this.gravity;
-                this.life -= this.decay;
-            }
-
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(${this.color}, ${this.life})`;
-                ctx.fill();
+        // Create confetti effect
+        function createConfetti() {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animation = `fall ${Math.random() * 3 + 2}s linear forwards`;
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 5000);
             }
         }
 
-        // Track number of games played
-        let gamesPlayed = 0;
-
-        // Letter names mapping with niqqud
-        const letterNames = {
-            'א': 'אָלֶף',
-            'ב': 'בֵּית',
-            'ג': 'גִימֶל',
-            'ד': 'דָלֶת',
-            'ה': 'הֵא',
-            'ו': 'וָוְ',
-            'ז': 'זַיִן',
-            'ח': 'חֵת',
-            'ט': 'טֵת',
-            'י': 'יוֹד',
-            'כ': 'כַף',
-            'ל': 'לָמֶד',
-            'מ': 'מֵם',
-            'נ': 'נוּן',
-            'ס': 'סָמֶך',
-            'ע': 'עַיִן',
-            'פ': 'פֵה',
-            'צ': 'צַדִיק',
-            'ק': 'קוֹף',
-            'ר': 'רֵיש',
-            'ש': 'שִין',
-            'ת': 'תָף',
-            'ך': 'כַף סוֹפִית',
-            'ם': 'מֵם סוֹפִית',
-            'ן': 'נוּן סוֹפִית',
-            'ף': 'פֵה סוֹפִית',
-            'ץ': 'צַדִיק סוֹפִית'
-        };
-
-        // Play letter sound using Web Speech API
-        function playLetterSound(letter) {
-            if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(letterNames[letter]);
-                utterance.lang = 'he-IL'; // Using Hebrew with niqqud
-                utterance.rate = 0.9; // Slightly slower speed
-                utterance.pitch = 1.1; // Slightly higher pitch for clarity
-                window.speechSynthesis.speak(utterance);
+        // Check if player name exists
+        window.onload = function() {
+            const playerName = localStorage.getItem('playerName');
+            if (playerName) {
+                showGameSelection(playerName);
             }
         }
-
-        // Hebrew alphabet - basic letters
-        const basicHebrewLetters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י',
-                                   'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ', 'ק', 'ר',
-                                   'ש', 'ת'];
-
-        // Final form letters
-        const finalFormLetters = ['ך', 'ם', 'ן', 'ף', 'ץ'];
-
-        // Current set of letters
-        let hebrewLetters = [...basicHebrewLetters];
-
-        class Balloon {
-            constructor() {
-                this.reset();
-                this.y = canvas.height + 30; // Start below the canvas
-                this.letter = hebrewLetters[Math.floor(Math.random() * hebrewLetters.length)];
-                this.setRandomColor();
-            }
-
-            reset() {
-                this.x = Math.random() * (canvas.width - 60) + 30;
-                this.y = canvas.height + 30;
-                this.speed = Math.random() * 0.8 + 0.3;
-                this.size = Math.random() * 20 + 45;
-                
-                // 30% chance to show the target letter
-                if (Math.random() < 0.3) {
-                    this.letter = targetLetter;
-                } else {
-                    // Pick a random letter that's not the target
-                    let availableLetters = hebrewLetters.filter(l => l !== targetLetter);
-                    this.letter = availableLetters[Math.floor(Math.random() * availableLetters.length)];
-                }
-                
-                this.setRandomColor();
-            }
-
-            setRandomColor() {
-                const colors = [
-                    '#4DA9FF', // bright blue
-                    '#89C4FF', // light blue
-                    '#FFD700', // bright yellow
-                    '#FFE44D', // light yellow
-                    '#FF69B4', // bright pink
-                    '#FF99CC', // light pink
-                    '#32CD32', // bright green
-                    '#90EE90'  // light green
-                ];
-                this.color = colors[Math.floor(Math.random() * colors.length)];
-            }
-
-            draw() {
-                // Draw balloon - make it rounder and narrower
-                ctx.beginPath();
-                ctx.fillStyle = this.color;
-                ctx.ellipse(this.x, this.y, this.size * 0.7, this.size * 0.8, 0, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Draw string
-                ctx.beginPath();
-                ctx.strokeStyle = 'black';
-                ctx.moveTo(this.x, this.y + this.size * 0.8);
-                ctx.lineTo(this.x, this.y + this.size * 0.8 + 15);
-                ctx.stroke();
-
-                // Draw letter
-                ctx.fillStyle = 'black';
-                ctx.font = `${this.size/2}px Fredoka`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(this.letter, this.x, this.y);
-            }
-
-            update() {
-                this.y -= this.speed;
-                if (this.y < -50) {
-                    this.reset();
-                }
-            }
-
-            checkClick(x, y) {
-                const dx = x - this.x;
-                const dy = y - this.y;
-                return (dx * dx) / ((this.size/2) * (this.size/2)) + 
-                       (dy * dy) / (this.size * this.size) <= 1;
-            }
-        }
-
-        const balloons = Array(4).fill(null).map(() => new Balloon());
-
-        // Assign each balloon to a specific section of the screen
-        function assignBalloonSections() {
-            const sectionWidth = canvas.width / balloons.length;
-            balloons.forEach((balloon, index) => {
-                const sectionX = index * sectionWidth;
-                balloon.x = sectionX + Math.random() * (sectionWidth - 60) + 30;
-            });
-        }
-
-        assignBalloonSections();
-        window.addEventListener('resize', assignBalloonSections);
-
-        function setNewTargetLetter() {
-            targetLetter = hebrewLetters[Math.floor(Math.random() * hebrewLetters.length)];
-            targetLetterElement.textContent = targetLetter;
-        }
-
-        function createExplosion(x, y, color) {
-            for (let i = 0; i < 30; i++) {
-                particles.push(new Particle(x, y, color));
-            }
-        }
-
-        const victoryEmojis = [
-            '🦄', // unicorn
-            '🦕', // dinosaur
-            '🎈', // balloon
-            '🎂', // cake
-            '🎪', // circus tent
-            '🌈', // rainbow
-            '🎠', // carousel horse
-            '🎡', // ferris wheel
-            '😊', // smiling face
-            '🌟', // star
-            '🎉', // party popper
-            '🎊'  // confetti ball
-        ];
-
-        function getRandomEmojis() {
-            // Get 3 random unique emojis
-            const shuffled = [...victoryEmojis].sort(() => 0.5 - Math.random());
-            return shuffled.slice(0, 3);
-        }
-
-        function checkWin() {
-            if (score >= 5 && gameActive) {
-                gameActive = false;
-                gamesPlayed++;
-
-                const winEmoji = victoryEmojis[Math.floor(Math.random() * victoryEmojis.length)];
-                document.getElementById('victory').innerHTML = 
-                    `${winEmoji}\n` +
-                    `<div class="win-text">כל הכבוד!</div>` +
-                    `<button id="play-again">לשלב הבא</button>`;
-                
-                // Add emoji to treasure box if not already collected
-                if (!collectedEmojis.has(winEmoji)) {
-                    collectedEmojis.add(winEmoji);
-                    // Replace the star with the won emoji
-                    const emptySlots = document.querySelectorAll('#treasureBox div:not(#collectedEmojis)');
-                    const nextEmptySlot = emptySlots[collectedEmojis.size - 1];
-                    if (nextEmptySlot) {
-                        nextEmptySlot.textContent = winEmoji;
-                        nextEmptySlot.style.background = 'rgba(255,255,255,0.4)';
-                        playMagicalSound();
-                    }
-                    
-                    // Check if all 9 emojis are collected
-                    if (collectedEmojis.size >= 9) {
-                        setTimeout(() => {
-                            alert('🎉 מזל טוב! אספת את כל האוצרות! 🎉');
-                            resetGame();
-                        }, 1000);
-                    }
-                }
-
-                // After 3 games, add final form letters
-                if (gamesPlayed === 3) {
-                    setTimeout(() => {
-                        hebrewLetters = [...basicHebrewLetters, ...finalFormLetters];
-                        alert('מצוין! עכשיו נוספו האותיות הסופיות: ך ם ן ף ץ');
-                    }, 2000);
-                }
-
-                document.getElementById('victory').style.display = 'block';
-                document.getElementById('play-again').addEventListener('click', resetGame);
-                
-                // Create victory particles
-                for (let i = 0; i < 100; i++) {
-                    setTimeout(() => {
-                        const x = Math.random() * canvas.width;
-                        const y = Math.random() * canvas.height;
-                        createExplosion(x, y, '255, 215, 0');
-                    }, i * 50);
-                }
-            }
-        }
-
-        function resetGame() {
-            score = 0;
-            scoreElement.textContent = '0';
-            // Don't clear collected emojis unless we have all 9
-            if (collectedEmojis.size >= 9) {
-                collectedEmojis.clear();
-                // Reset all slots to stars
-                const slots = document.querySelectorAll('#treasureBox div:not(#collectedEmojis)');
-                slots.forEach(slot => {
-                    slot.textContent = '⭐';
-                    slot.style.background = 'rgba(255,255,255,0.2)';
-                });
-            }
-            gameActive = true;
-            particles = [];
-            document.getElementById('victory').style.display = 'none';
-            setNewTargetLetter();
-            balloons.forEach(balloon => balloon.reset());
-        }
-
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            if (gameActive) {
-                balloons.forEach(balloon => {
-                    balloon.update();
-                    balloon.draw();
-                });
-            }
-
-            // Update and draw particles
-            particles = particles.filter(p => p.life > 0);
-            particles.forEach(particle => {
-                particle.update();
-                particle.draw();
-            });
-
-            requestAnimationFrame(animate);
-        }
-
-        function handleTouch(event) {
-            event.preventDefault();
-            if (!gameActive) return;
-
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-
-            let x, y;
-            if (event.type === 'click') {
-                x = (event.clientX - rect.left) * scaleX;
-                y = (event.clientY - rect.top) * scaleY;
-            } else if (event.type === 'touchstart') {
-                const touch = event.touches[0];
-                x = (touch.clientX - rect.left) * scaleX;
-                y = (touch.clientY - rect.top) * scaleY;
-            }
-
-            balloons.forEach(balloon => {
-                if (balloon.checkClick(x, y)) {
-                    if (balloon.letter === targetLetter) {
-                        score++;
-                        scoreElement.textContent = score;
-                        createExplosion(x, y, '0, 255, 0');
-                        playLetterSound(balloon.letter);
-                        setNewTargetLetter();
-                        checkWin();
-                    } else {
-                        score = Math.max(0, score - 1);
-                        scoreElement.textContent = score;
-                        createExplosion(x, y, '255, 0, 0');
-                    }
-                    balloon.reset();
-                }
-            });
-        }
-
-        canvas.addEventListener('click', (e) => {
-            initAudio(); // Initialize audio on first click
-            handleTouch(e);
-        });
-        canvas.addEventListener('touchstart', (e) => {
-            initAudio(); // Initialize audio on first touch
-            handleTouch(e);
-        });
-        
-        setNewTargetLetter();
-        animate();
     </script>
 </body>
 </html>
