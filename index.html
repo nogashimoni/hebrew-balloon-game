@@ -186,42 +186,42 @@
         // Track number of games played
         let gamesPlayed = 0;
 
-        // Letter names mapping
+        // Letter names mapping with niqqud
         const letterNames = {
-            'א': 'אלף',
-            'ב': 'בית',
-            'ג': 'גימל',
-            'ד': 'דלת',
-            'ה': 'הא',
-            'ו': 'וו',
-            'ז': 'זין',
-            'ח': 'חית',
-            'ט': 'טית',
-            'י': 'יוד',
-            'כ': 'כף',
-            'ל': 'למד',
-            'מ': 'מם',
-            'נ': 'נון',
-            'ס': 'סמך',
-            'ע': 'עין',
-            'פ': 'פה',
-            'צ': 'צדי',
-            'ק': 'קוף',
-            'ר': 'ריש',
-            'ש': 'שין',
-            'ת': 'תו',
-            'ך': 'כף סופית',
-            'ם': 'מם סופית',
-            'ן': 'נון סופית',
-            'ף': 'פה סופית',
-            'ץ': 'צדי סופית'
+            'א': 'אָלֶף',
+            'ב': 'בֵית',
+            'ג': 'גִימֶל',
+            'ד': 'דָלֶת',
+            'ה': 'הֵא',
+            'ו': 'וָו',
+            'ז': 'זַיִן',
+            'ח': 'חֵת',
+            'ט': 'טֵת',
+            'י': 'יוֹד',
+            'כ': 'כַף',
+            'ל': 'לָמֶד',
+            'מ': 'מֵם',
+            'נ': 'נוּן',
+            'ס': 'סָמֶך',
+            'ע': 'עַיִן',
+            'פ': 'פֵה',
+            'צ': 'צַדִי',
+            'ק': 'קוֹף',
+            'ר': 'רֵיש',
+            'ש': 'שִין',
+            'ת': 'תָו',
+            'ך': 'כַף סוֹפִית',
+            'ם': 'מֵם סוֹפִית',
+            'ן': 'נוּן סוֹפִית',
+            'ף': 'פֵה סוֹפִית',
+            'ץ': 'צַדִי סוֹפִית'
         };
 
         // Play letter sound using Web Speech API
         function playLetterSound(letter) {
             if ('speechSynthesis' in window) {
                 const utterance = new SpeechSynthesisUtterance(letterNames[letter]);
-                utterance.lang = 'he-IL'; // Using Hebrew
+                utterance.lang = 'he-IL'; // Using Hebrew with niqqud
                 utterance.rate = 0.9; // Slightly slower speed
                 utterance.pitch = 1.1; // Slightly higher pitch for clarity
                 window.speechSynthesis.speak(utterance);
