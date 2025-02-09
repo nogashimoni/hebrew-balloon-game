@@ -252,7 +252,16 @@
                 this.y = canvas.height + 30;
                 this.speed = Math.random() * 0.8 + 0.3;
                 this.size = Math.random() * 20 + 45;
-                this.letter = hebrewLetters[Math.floor(Math.random() * hebrewLetters.length)];
+                
+                // 30% chance to show the target letter
+                if (Math.random() < 0.3) {
+                    this.letter = targetLetter;
+                } else {
+                    // Pick a random letter that's not the target
+                    let availableLetters = hebrewLetters.filter(l => l !== targetLetter);
+                    this.letter = availableLetters[Math.floor(Math.random() * availableLetters.length)];
+                }
+                
                 this.setRandomColor();
             }
 
@@ -362,7 +371,7 @@
                 document.getElementById('victory').innerHTML = 
                     `${winEmoji}\n` +
                     `<div class="win-text">כל הכבוד!</div>` +
-                    `<button id="play-again">לשחק שוב</button>`;
+                    `<button id="play-again">לשלב הבא</button>`;
 
                 // After 3 games, add final form letters
                 if (gamesPlayed === 3) {
