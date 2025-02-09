@@ -29,37 +29,33 @@
             max-height: 100vh;
             touch-action: none;
         }
-        .game-header {
+        #target-letter {
             position: fixed;
-            top: 20px;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: min(120px, 20vh);
+            color: #333;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px 40px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.15);
             pointer-events: none;
-            direction: rtl;
+            z-index: 2;
         }
         #score {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
             font-size: min(24px, 4vh);
             color: #333;
             background: rgba(255, 255, 255, 0.9);
             padding: 8px 16px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            pointer-events: auto;
-            margin-left: 20px;
-        }
-        #target-letter {
-            font-size: min(24px, 4vh);
-            color: #333;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 8px 16px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            pointer-events: auto;
-            margin-right: 20px;
+            pointer-events: none;
+            direction: rtl;
+            z-index: 1;
         }
         #victory {
             display: none;
@@ -118,10 +114,8 @@
     </style>
 </head>
 <body>
-    <div class="game-header">
-        <div id="score">ניקוד: <span id="scoreValue">0</span>/5</div>
-        <div id="target-letter"></div>
-    </div>
+    <div id="target-letter"></div>
+    <div id="score">ניקוד: <span id="scoreValue">0</span>/5</div>
     <div id="victory"></div>
     <canvas id="gameCanvas"></canvas>
 
