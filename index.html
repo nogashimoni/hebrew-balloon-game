@@ -116,6 +116,28 @@
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
 
+        .toys-card {
+            background: linear-gradient(45deg, #FFB6C1, #FFC0CB);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 10px;
+            width: 80%;
+            max-width: 300px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .toys-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(255, 182, 193, 0.4);
+        }
+
         .game-icon {
             font-size: 2em;
             margin-bottom: 10px;
@@ -174,6 +196,10 @@
             <a href="letter-recognition.html" class="game-card">
                 <div class="game-icon">🔊</div>
                 <h3>זיהוי אותיות</h3>
+            </a>
+            <a href="toys.html" class="toys-card">
+                <div class="game-icon">🧸</div>
+                <h3>הצעצועים שלי</h3>
             </a>
         </div>
     </div>
