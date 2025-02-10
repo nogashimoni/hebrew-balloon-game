@@ -351,13 +351,7 @@
                 score++;
                 document.getElementById('scoreValue').textContent = score;
                 if (score >= 5) {
-                    const emoji = getRandomEmojis()[0];
-                    collectedEmojis.add(emoji);
                     document.querySelector('.game-container').style.display = 'none';
-                    if (checkAllEmojisCollected(collectedEmojis)) {
-                        endGame();
-                        return;
-                    }
                     endGame();
                     return;
                 }
@@ -399,43 +393,56 @@
         }
 
         function endGame() {
-            const winEmoji = victoryEmojis[Math.floor(Math.random() * victoryEmojis.length)];
-            document.getElementById('victory').innerHTML = 
-                `${winEmoji}\n` +
-                `<div class="win-text">כל הכבוד!</div>` +
-                `<div class="score">הצלחת להגיע ל-5 נקודות!</div>` +
-                `<button id="resetButton" class="option-button" style="display: block; margin: 15px auto; padding: 10px 30px; font-size: 20px; background: #FFB6C1; border: none; border-radius: 25px; color: white; cursor: pointer;">להמשיך</button>`;
-            
-            // Add emoji to treasure box after reaching 5 points
-            if (!collectedEmojis.has(winEmoji)) {
-                collectedEmojis.add(winEmoji);
-                // Replace the star with the won emoji - fill from right to left
-                const emptySlots = Array.from(document.querySelectorAll('#treasureBox div')).reverse();
-                const nextEmptySlot = emptySlots.find(slot => slot.textContent === '⭐');
-                if (nextEmptySlot) {
-                    nextEmptySlot.textContent = winEmoji;
-                    nextEmptySlot.style.background = 'rgba(255,255,255,0.4)';
-                    playMagicalSound().catch(console.error);
+            if (score >= 5) {
+                const winEmoji = victoryEmojis[Math.floor(Math.random() * victoryEmojis.length)];
+                document.getElementById('victory').innerHTML = 
+                    `${winEmoji}\n` +
+                    `<div class="win-text">כל הכבוד!</div>` +
+                    `<div class="score">הצלחת להגיע ל-5 נקודות!</div>` +
+                    `<button id="resetButton" class="option-button" style="display: block; margin: 15px auto; padding: 10px 30px; font-size: 20px; background: #FFB6C1; border: none; border-radius: 25px; color: white; cursor: pointer;">להמשיך</button>`;
+                
+                // Add emoji to treasure box if not already collected
+                if (!collectedEmojis.has(winEmoji)) {
+                    collectedEmojis.add(winEmoji);
+                    // Replace the star with the won emoji
+                    const emptySlots = document.querySelectorAll('#treasureBox div:not(#collectedEmojis)');
+                    const nextEmptySlot = emptySlots[collectedEmojis.size - 1];
+                    if (nextEmptySlot) {
+                        nextEmptySlot.textContent = winEmoji;
+                        nextEmptySlot.style.background = 'rgba(255,255,255,0.4)';
+                        playMagicalSound().catch(console.error);
+                    }
+                    
+                    // Check if enough emojis are collected to show selection screen
+                    if (checkAllEmojisCollected(collectedEmojis)) {
+                        document.getElementById('victory').style.display = 'none';
+                        showEmojiSelection(collectedEmojis);
+                        return;
+                    }
                 }
                 
-                // Check if all 9 emojis are collected
-                if (collectedEmojis.size >= 9) {
-                    setTimeout(() => {
-                        alert('🎉 מזל טוב! אספת את כל האוצרות! 🎉');
-                        resetGame();
-                    }, 1000);
+                // Only show victory screen if we don't have 9 emojis yet
+                if (!checkAllEmojisCollected(collectedEmojis)) {
+                    document.getElementById('victory').style.display = 'block';
+                    document.getElementById('resetButton').onclick = resetGame;
                 }
             }
-
-            document.getElementById('victory').style.display = 'block';
-            document.getElementById('resetButton').onclick = resetGame;
         }
 
         // Make resetGame available globally
         window.resetGame = function() {
             score = 0;
-            collectedEmojis.clear();
             document.getElementById('scoreValue').textContent = score;
+            // Don't clear collected emojis unless we have exactly 9
+            if (collectedEmojis.size === 9) {
+                collectedEmojis.clear();
+                // Reset treasure box stars
+                const slots = document.querySelectorAll('#treasureBox div:not(#collectedEmojis)');
+                slots.forEach(slot => {
+                    slot.textContent = '⭐';
+                    slot.style.background = 'rgba(255,255,255,0.2)';
+                });
+            }
             setNewQuestion();
             document.getElementById('victory').style.display = 'none';
             document.querySelector('.game-container').style.display = 'block';

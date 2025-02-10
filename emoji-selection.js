@@ -1,4 +1,5 @@
 function showEmojiSelection(collectedEmojis) {
+    console.log('showEmojiSelection called with emojis:', Array.from(collectedEmojis));
     // Create modal container
     const modal = document.createElement('div');
     modal.style.cssText = `
@@ -42,7 +43,9 @@ function showEmojiSelection(collectedEmojis) {
     `;
 
     // Convert Set to Array and create buttons
+    console.log('Creating emoji buttons...');
     Array.from(collectedEmojis).forEach(emoji => {
+        console.log('Creating button for emoji:', emoji);
         const button = document.createElement('button');
         button.textContent = emoji;
         button.style.cssText = `
@@ -95,11 +98,7 @@ function showEmojiSelection(collectedEmojis) {
     document.body.appendChild(modal);
 }
 
-// Function to check if all emojis are collected
 function checkAllEmojisCollected(collectedEmojis) {
-    if (collectedEmojis.size >= 9) {
-        showEmojiSelection(collectedEmojis);
-        return true;
-    }
-    return false;
+    console.log('checkAllEmojisCollected called, size:', collectedEmojis.size);
+    return collectedEmojis.size === 8;
 }
