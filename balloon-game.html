@@ -333,12 +333,13 @@
             reset() {
                 this.x = Math.random() * (canvas.width - 60) + 30;
                 this.y = canvas.height + 30;
-                this.baseSpeed = Math.random() * 1.4 + 1.0;
+                this.baseSpeed = Math.random() * 0.8 + 0.6; // Slower speed range: 0.6-1.4 instead of 1.0-2.4
                 this.size = Math.random() * 20 + 45;
                 
-                // 30% chance to show the target letter
-                if (Math.random() < 0.3) {
+                // 40% chance to show the target letter
+                if (Math.random() < 0.4) {
                     this.letter = targetLetter;
+                    this.size = Math.random() * 20 + 55; // Make target letter balloons bigger
                 } else {
                     // Pick a random letter that's not the target
                     let availableLetters = hebrewLetters.filter(l => l !== targetLetter);
@@ -402,7 +403,7 @@
             }
         }
 
-        const balloons = Array(6).fill(null).map(() => new Balloon());
+        const balloons = Array(4).fill(null).map(() => new Balloon());
 
         // Assign each balloon to a specific section of the screen
         function assignBalloonSections() {
