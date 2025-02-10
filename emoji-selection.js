@@ -36,7 +36,7 @@ function showEmojiSelection(collectedEmojis) {
     const grid = document.createElement('div');
     grid.style.cssText = `
         display: grid;
-        grid-template-columns: repeat(${Math.min(3, collectedEmojis.size)}, 1fr);
+        grid-template-columns: repeat(3, 1fr);
         gap: 15px;
         margin: 20px 0;
     `;
@@ -97,7 +97,7 @@ function showEmojiSelection(collectedEmojis) {
 
 // Function to check if all emojis are collected
 function checkAllEmojisCollected(collectedEmojis) {
-    if (collectedEmojis.size >= 2) {
+    if (collectedEmojis.size >= 9) {
         showEmojiSelection(collectedEmojis);
         return true;
     }
