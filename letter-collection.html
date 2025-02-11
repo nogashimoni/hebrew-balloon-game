@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>משחק איסוף האותיות</title>
+    <script src="emoji-selection.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦖</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(180deg, #87CEEB 0%, #E0F7FA 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .back-button {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        .game-container {
+            height: 400px;
+            position: relative;
+            overflow: hidden;
+            margin: 20px 0;
+            border: 3px solid #4CAF50;
+            border-radius: 10px;
+            background: linear-gradient(180deg, #87CEEB 0%, #E0F7FA 100%);
+            width: 100%;
+        }
+
+        .scene {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .background {
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            background: repeating-linear-gradient(90deg, 
+                transparent 0, transparent 100px,
+                rgba(255, 255, 255, 0.1) 100px, rgba(255, 255, 255, 0.1) 200px
+            );
+            animation: moveBackground 4s linear infinite;
+        }
+
+        @keyframes moveBackground {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+
+        .ground-container {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100px;
+            overflow: hidden;
+        }
+
+        .ground {
+            position: absolute;
+            bottom: 0;
+            width: 200%;
+            height: 100px;
+            background: linear-gradient(0deg, #8B4513 0%, #A0522D 100%);
+            background-image: repeating-linear-gradient(90deg, 
+                transparent 0, transparent 100px,
+                rgba(0, 0, 0, 0.1) 100px, rgba(0, 0, 0, 0.1) 200px
+            );
+            animation: moveGround 4s linear infinite;
+            left: 0;
+        }
+
+        @keyframes moveGround {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+
+        .grass-container {
+            position: absolute;
+            bottom: 100px;
+            width: 100%;
+            height: 20px;
+            overflow: hidden;
+        }
+
+        .grass {
+            position: absolute;
+            bottom: 0;
+            width: 200%;
+            height: 20px;
+            background: #228B22;
+            background-image: repeating-linear-gradient(90deg, 
+                transparent 0, transparent 100px,
+                rgba(0, 0, 0, 0.1) 100px, rgba(0, 0, 0, 0.1) 200px
+            );
+            animation: moveGround 4s linear infinite;
+            left: 0;
+        }
+
+
+
+        .dino {
+            position: absolute;
+            bottom: 120px;
+            left: 20%;
+            width: 80px;
+            height: 80px;
+            z-index: 100;
+            font-size: 70px;
+            line-height: 1;
+            text-align: center;
+            color: #000;
+            user-select: none;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dino.jumping {
+            animation: jump 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes jump {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-150px); }
+            100% { transform: translateY(0); }
+        }
+
+
+
+        .letter {
+            position: absolute;
+            font-size: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        @keyframes moveLetter {
+            from { 
+                transform: translateX(0);
+                opacity: 0;
+            }
+            5% {
+                opacity: 1;
+            }
+            95% {
+                opacity: 1;
+            }
+            to { 
+                transform: translateX(-90vw);
+                opacity: 0;
+            }
+        }
+
+
+
+        .collected-letters {
+            margin: 20px auto;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        .collected-letters h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .letters-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+
+        .letter-slot {
+            width: 40px;
+            height: 40px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .letter-slot.collected {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .lives {
+            display: flex;
+            gap: 10px;
+            font-size: 24px;
+        }
+
+        .target-letter {
+            text-align: center;
+            margin: 0;
+            flex-grow: 1;
+            font-size: 48px;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+
+
+        .victory {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1000;
+        }
+
+        .victory h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .victory button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        .victory button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <button onclick="window.location.href='index.html'" class="back-button" title="חזרה לחדר המשחקים">⬅️</button>
+    
+    <div class="game-header">
+        <div class="lives">
+            <span>❤️</span>
+            <span>❤️</span>
+            <span>❤️</span>
+        </div>
+        <div class="target-letter"><span>א</span></div>
+    </div>
+    
+    <div class="game-container">
+        <div class="scene">
+            <div class="background"></div>
+            <div class="dino" style="color: #000; font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; transform: scaleX(-1);">🦖<span style="font-size: 24px; display: none;">דינו</span></div>
+            <div class="grass-container">
+                <div class="grass"></div>
+            </div>
+            <div class="ground-container">
+                <div class="ground"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="collected-letters">
+        <h3>האותיות שאספתי</h3>
+        <div class="letters-grid"></div>
+    </div>
+
+    <div class="victory">
+        <h2>כל הכבוד! אספת את כל האותיות! 🎉</h2>
+        <div class="victory-emoji"></div>
+        <button onclick="window.location.reload()">שחק שוב</button>
+    </div>
+
+    <script>
+        const hebrewLetters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י', 'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ', 'ק', 'ר', 'ש', 'ת'];
+        let collectedLetters = new Set();
+        let currentTargetLetter = '';
+        let lives = 3;
+        let dinoPosition = 50;
+        let isMovingRight = true;
+        let gameInterval;
+        let letterSpawnInterval;
+        
+        // Initialize the collected letters grid
+        function initializeLettersGrid() {
+            const grid = document.querySelector('.letters-grid');
+            hebrewLetters.forEach(letter => {
+                const slot = document.createElement('div');
+                slot.className = 'letter-slot';
+                slot.dataset.letter = letter;
+                grid.appendChild(slot);
+            });
+        }
+
+        // Update the collected letters display
+        function updateCollectedLetters() {
+            document.querySelectorAll('.letter-slot').forEach(slot => {
+                if (collectedLetters.has(slot.dataset.letter)) {
+                    slot.classList.add('collected');
+                    slot.textContent = slot.dataset.letter;
+                }
+            });
+        }
+
+        // Set a new target letter
+        function setNewTargetLetter() {
+            const availableLetters = hebrewLetters.filter(l => !collectedLetters.has(l));
+            if (availableLetters.length === 0) {
+                endGame();
+                return;
+            }
+            currentTargetLetter = availableLetters[Math.floor(Math.random() * availableLetters.length)];
+            document.querySelector('.target-letter span').textContent = currentTargetLetter;
+        }
+
+        // Create a new letter in a flower
+        function createLetter() {
+            const letter = document.createElement('div');
+            const isTargetLetter = Math.random() < 0.3; // 30% chance for target letter
+            const letterText = isTargetLetter ? currentTargetLetter : 
+                hebrewLetters[Math.floor(Math.random() * hebrewLetters.length)];
+            
+
+            letter.className = 'letter';
+            letter.textContent = letterText;
+            letter.style.left = (window.innerWidth - 100) + 'px';
+            letter.style.animation = 'moveLetter 6s linear';
+            letter.style.animationFillMode = 'forwards';
+            letter.style.bottom = '220px';
+            document.querySelector('.game-container').appendChild(letter);
+            
+            // Don't remove letters automatically, they'll be removed when they move off screen
+        }
+
+        // Check for letter collection
+        function checkCollisions() {
+            const dino = document.querySelector('.dino');
+            const dinoRect = dino.getBoundingClientRect();
+            
+            // Check for letter collection only when jumping
+            if (dino.classList.contains('jumping')) {
+                document.querySelectorAll('.letter').forEach(letter => {
+                    const letterRect = letter.getBoundingClientRect();
+                    const dinoRect = dino.getBoundingClientRect();
+                    
+                    // Calculate the vertical center points
+                    const letterCenter = letterRect.top + (letterRect.height / 2);
+                    const dinoCenter = dinoRect.top + (dinoRect.height / 2);
+                    
+                    // Check if dino is at the right height to collect the letter
+                    const verticalDistance = Math.abs(letterCenter - dinoCenter);
+                    
+                    if (letterRect.left < dinoRect.right &&
+                        letterRect.right > dinoRect.left &&
+                        verticalDistance < 50) { // Adjust this value to make collection easier/harder
+                        
+                        if (letter.textContent === currentTargetLetter) {
+                            collectedLetters.add(currentTargetLetter);
+                            updateCollectedLetters();
+                            playCollectSound();
+                            setNewTargetLetter();
+                        } else {
+                            // Wrong letter collected
+                            lives--;
+                            updateLives();
+                            playWrongSound();
+                            if (lives <= 0) {
+                                gameOver();
+                            }
+                        }
+                        letter.remove();
+                    }
+                });
+            }
+        }
+
+        // Sound effects
+        function jump() {
+            const dino = document.querySelector('.dino');
+            if (!dino.classList.contains('jumping')) {
+                dino.classList.add('jumping');
+                playJumpSound();
+                setTimeout(() => {
+                    dino.classList.remove('jumping');
+                }, 500);
+            }
+        }
+
+        function playJumpSound() {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+            oscillator.frequency.linearRampToValueAtTime(600, audioContext.currentTime + 0.1);
+            
+            gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.1);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+
+        let audioContext;
+        let isAudioInitialized = false;
+
+        function initAudio() {
+            if (!isAudioInitialized) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                isAudioInitialized = true;
+            }
+        }
+
+        function playCollectSound() {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(500, audioContext.currentTime);
+            oscillator.frequency.linearRampToValueAtTime(800, audioContext.currentTime + 0.1);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.1);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+
+        function playWrongSound() {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'square';
+            oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.2);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.2);
+        }
+
+        function playGameOverSound() {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+            oscillator.frequency.linearRampToValueAtTime(100, audioContext.currentTime + 0.5);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        function playVictorySound() {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+            oscillator.frequency.linearRampToValueAtTime(600, audioContext.currentTime + 0.2);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.2);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.2);
+        }
+
+        // End game and show victory screen
+        function updateLives() {
+            const livesContainer = document.querySelector('.lives');
+            livesContainer.innerHTML = '❤️'.repeat(lives);
+        }
+
+        function gameOver() {
+            clearInterval(gameInterval);
+            clearInterval(letterSpawnInterval);
+            
+            const victory = document.querySelector('.victory');
+            victory.querySelector('h2').textContent = 'המשחק נגמר! 💔';
+            victory.style.display = 'block';
+            
+            playGameOverSound();
+        }
+
+        function endGame() {
+            clearInterval(gameInterval);
+            clearInterval(letterSpawnInterval);
+            
+            const victory = document.querySelector('.victory');
+            const emoji = '🎮';
+            victory.querySelector('.victory-emoji').textContent = emoji;
+            victory.style.display = 'block';
+            
+            playVictorySound();
+            
+            // Save the collected emoji
+            const collectedEmojis = new Set(JSON.parse(localStorage.getItem('collectedEmojis') || '[]'));
+            collectedEmojis.add(emoji);
+            localStorage.setItem('collectedEmojis', JSON.stringify([...collectedEmojis]));
+        }
+
+        // Start the game
+        document.addEventListener('DOMContentLoaded', () => {
+            document.addEventListener('click', initAudio, { once: true });
+            // Handle keyboard events
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space') {
+                    e.preventDefault(); // Prevent page scroll
+                    const dino = document.querySelector('.dino');
+                    if (!dino.classList.contains('jumping')) {
+                        jump();
+                    }
+                }
+            });
+
+            // Handle touch events
+            document.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // Prevent default touch behavior
+                const dino = document.querySelector('.dino');
+                if (!dino.classList.contains('jumping')) {
+                    jump();
+                }
+            }, { passive: false });
+            
+            initializeLettersGrid();
+            setNewTargetLetter();
+            
+            const dino = document.querySelector('.dino');
+            
+            gameInterval = setInterval(checkCollisions, 50);
+            letterSpawnInterval = setInterval(createLetter, 2000);
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (dinoPosition > window.innerWidth - 100) {
+                dinoPosition = window.innerWidth - 100;
+                document.querySelector('.dino').style.left = dinoPosition + 'px';
+            }
+        });
+    </script>
+</body>
+</html>
