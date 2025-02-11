@@ -156,7 +156,17 @@
             text-align: center;
             color: #000;
             user-select: none;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: left 0.3s ease-out;
+        }
+
+        .dino.running {
+            animation: run 0.5s infinite alternate;
+            left: 40%;
+        }
+
+        @keyframes run {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-10px); }
         }
 
         .dino.jumping {
@@ -621,12 +631,32 @@
             document.addEventListener('click', initAudio, { once: true });
             // Handle keyboard events
             document.addEventListener('keydown', (e) => {
+                const dino = document.querySelector('.dino');
                 if (e.code === 'Space') {
                     e.preventDefault(); // Prevent page scroll
-                    const dino = document.querySelector('.dino');
                     if (!dino.classList.contains('jumping')) {
                         jump();
                     }
+                } else if (e.code === 'ArrowRight') {
+                    e.preventDefault();
+                    if (!dino.classList.contains('running')) {
+                        dino.classList.add('running');
+                        // Speed up animations while running
+                        document.querySelector('.background').style.animationDuration = '2s';
+                        document.querySelector('.ground').style.animationDuration = '2s';
+                        document.querySelector('.grass').style.animationDuration = '2s';
+                    }
+                }
+            });
+
+            document.addEventListener('keyup', (e) => {
+                if (e.code === 'ArrowRight') {
+                    const dino = document.querySelector('.dino');
+                    dino.classList.remove('running');
+                    // Reset animation speeds
+                    document.querySelector('.background').style.animationDuration = '4s';
+                    document.querySelector('.ground').style.animationDuration = '4s';
+                    document.querySelector('.grass').style.animationDuration = '4s';
                 }
             });
 
