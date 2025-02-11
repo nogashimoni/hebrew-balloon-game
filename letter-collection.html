@@ -34,6 +34,30 @@
             z-index: 1000;
         }
 
+        .lives {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            z-index: 100;
+            display: flex;
+            gap: 5px;
+        }
+
+        .heart {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .heart.lost {
+            opacity: 0.2;
+        }
+
         .game-container {
             height: 400px;
             position: relative;
@@ -285,9 +309,9 @@
     
     <div class="game-header">
         <div class="lives">
-            <span>❤️</span>
-            <span>❤️</span>
-            <span>❤️</span>
+            <div class="heart">❤️</div>
+            <div class="heart">❤️</div>
+            <div class="heart">❤️</div>
         </div>
         <div class="target-letter"><span>א</span></div>
     </div>
@@ -325,6 +349,8 @@
         let isMovingRight = true;
         let gameInterval;
         let letterSpawnInterval;
+        let gameSpeed = 1;
+        let letterSpeed = 6;
         
         // Initialize the collected letters grid
         function initializeLettersGrid() {
@@ -369,7 +395,7 @@
             letter.className = 'letter';
             letter.textContent = letterText;
             letter.style.left = (window.innerWidth - 100) + 'px';
-            letter.style.animation = 'moveLetter 6s linear';
+            letter.style.animation = `moveLetter ${letterSpeed}s linear`;
             letter.style.animationFillMode = 'forwards';
             letter.style.bottom = '220px';
             document.querySelector('.game-container').appendChild(letter);
@@ -403,6 +429,20 @@
                             collectedLetters.add(currentTargetLetter);
                             updateCollectedLetters();
                             playCollectSound();
+                            
+                            // Speed up the game after 10 letters
+                            if (collectedLetters.size === 10) {
+                                gameSpeed = 1.5;
+                                letterSpeed = 4;
+                                // Speed up animations
+                                document.querySelector('.background').style.animationDuration = '2.7s';
+                                document.querySelector('.ground').style.animationDuration = '2.7s';
+                                document.querySelector('.grass').style.animationDuration = '2.7s';
+                                // Speed up letter spawn rate
+                                clearInterval(letterSpawnInterval);
+                                letterSpawnInterval = setInterval(createLetter, 1500);
+                            }
+                            
                             setNewTargetLetter();
                         } else {
                             // Wrong letter collected
@@ -542,8 +582,10 @@
 
         // End game and show victory screen
         function updateLives() {
-            const livesContainer = document.querySelector('.lives');
-            livesContainer.innerHTML = '❤️'.repeat(lives);
+            const hearts = document.querySelectorAll('.heart');
+            hearts.forEach((heart, index) => {
+                heart.classList.toggle('lost', index >= lives);
+            });
         }
 
         function gameOver() {
