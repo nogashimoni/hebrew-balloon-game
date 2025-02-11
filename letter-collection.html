@@ -609,21 +609,105 @@
             playGameOverSound();
         }
 
+        function showToySelection() {
+            const toys = ['🧸', '🎠', '🎮', '🪀', '🎪', '🎨'];
+            const selectedToys = toys.sort(() => 0.5 - Math.random()).slice(0, 3);
+
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+            `;
+
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: white;
+                padding: 20px;
+                border-radius: 20px;
+                max-width: 90%;
+                width: 400px;
+                text-align: center;
+                direction: rtl;
+            `;
+
+            const title = document.createElement('h2');
+            title.textContent = 'בחרו צעצוע לאוסף שלכם!';
+            title.style.cssText = `
+                color: #333;
+                margin-bottom: 20px;
+                font-size: 24px;
+            `;
+
+            const grid = document.createElement('div');
+            grid.style.cssText = `
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
+                margin: 20px 0;
+            `;
+
+            selectedToys.forEach(toy => {
+                const button = document.createElement('button');
+                button.textContent = toy;
+                button.style.cssText = `
+                    font-size: 40px;
+                    padding: 15px;
+                    border: 2px solid #ddd;
+                    border-radius: 10px;
+                    background: white;
+                    cursor: pointer;
+                    transition: transform 0.2s;
+                `;
+
+                button.addEventListener('mouseover', () => {
+                    button.style.transform = 'scale(1.1)';
+                });
+
+                button.addEventListener('mouseout', () => {
+                    button.style.transform = 'scale(1)';
+                });
+
+                button.addEventListener('click', () => {
+                    const collectedEmojis = new Set(JSON.parse(localStorage.getItem('collectedEmojis') || '[]'));
+                    collectedEmojis.add(toy);
+                    localStorage.setItem('collectedEmojis', JSON.stringify([...collectedEmojis]));
+                    
+                    // Update victory screen
+                    const victory = document.querySelector('.victory');
+                    victory.querySelector('.victory-emoji').textContent = toy;
+                    
+                    // Remove modal
+                    document.body.removeChild(modal);
+                });
+
+                grid.appendChild(button);
+            });
+
+            content.appendChild(title);
+            content.appendChild(grid);
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+        }
+
         function endGame() {
             clearInterval(gameInterval);
             clearInterval(letterSpawnInterval);
             
             const victory = document.querySelector('.victory');
-            const emoji = '🎮';
-            victory.querySelector('.victory-emoji').textContent = emoji;
             victory.style.display = 'block';
             
             playVictorySound();
             
-            // Save the collected emoji
-            const collectedEmojis = new Set(JSON.parse(localStorage.getItem('collectedEmojis') || '[]'));
-            collectedEmojis.add(emoji);
-            localStorage.setItem('collectedEmojis', JSON.stringify([...collectedEmojis]));
+            // Show toy selection
+            showToySelection();
         }
 
         // Start the game
