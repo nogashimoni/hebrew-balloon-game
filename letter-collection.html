@@ -631,8 +631,8 @@
             });
 
             // Handle touch events
-            document.addEventListener('touchstart', (e) => {
-                e.preventDefault(); // Prevent default touch behavior
+            document.querySelector('.game-container').addEventListener('touchstart', (e) => {
+                e.preventDefault(); // Prevent default touch behavior only in game area
                 const dino = document.querySelector('.dino');
                 if (!dino.classList.contains('jumping')) {
                     jump();
