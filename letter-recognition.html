@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>זיהוי אותיות</title>
-    <script src="emoji-selection.js"></script>
+    <script src="toy-selection.js"></script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔊</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600&display=swap" rel="stylesheet">
     <style>
@@ -417,7 +417,20 @@
                     // Check if enough emojis are collected to show selection screen
                     if (checkAllEmojisCollected(collectedEmojis)) {
                         document.getElementById('victory').style.display = 'none';
-                        showEmojiSelection(collectedEmojis);
+                        // Use the shared toy selection system
+                        showToySelection(toySelected, null);
+                        
+                        function toySelected(toy) {
+                            // Reset collection
+                            collectedEmojis.clear();
+                            
+                            // Reset treasure box
+                            const slots = document.querySelectorAll('#treasureBox div:not(#collectedEmojis)');
+                            slots.forEach(slot => {
+                                slot.textContent = '⭐';
+                                slot.style.background = 'rgba(255,255,255,0.2)';
+                            });
+                        }
                         return;
                     }
                 }
@@ -449,6 +462,11 @@
             document.querySelector('.game-container').style.display = 'block';
         }
 
+        // Helper function to check if all emojis have been collected
+        function checkAllEmojisCollected(collectedEmojis) {
+            return collectedEmojis.size === 9; // 8 emojis needed to trigger toy selection
+        }
+        
         // Initialize game
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('playSound').onclick = function() {
