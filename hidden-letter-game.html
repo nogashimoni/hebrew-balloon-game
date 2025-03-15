@@ -115,6 +115,31 @@
             position: relative;
         }
         
+        .post-it::before, .post-it::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #FFEB3B, #FFC107);
+            z-index: 1;
+            transition: opacity 0.2s ease;
+        }
+        
+        .post-it::before {
+            z-index: 2;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .post-it.click-1::before {
+            opacity: 0;
+        }
+        
+        .post-it.click-2::before, .post-it.click-2::after {
+            opacity: 0;
+        }
+        
 
         .post-it:hover {
             transform: scale(0.97);
@@ -309,6 +334,8 @@
         let audioContext = null;
         let level = 1;
         let totalLevels = 5;
+        let wrongAttempts = 0;
+        const synth = window.speechSynthesis;
 
         // Initialize audio context on first user interaction
         function initAudio() {
@@ -459,6 +486,19 @@
             return array;
         }
 
+        // Speak text using speech synthesis
+        function speakText(text) {
+            if (!synth) return;
+            
+            // Stop any ongoing speech
+            synth.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'he-IL';
+            utterance.rate = 0.9;
+            synth.speak(utterance);
+        }
+        
         // Handle option button click
         function handleOptionClick(letter, event) {
             if (!isGameActive) return;
@@ -471,30 +511,89 @@
                 playSuccessSound();
                 event.target.classList.add('correct');
                 
+                // Speak the correct feedback
+                speakText(letter + '. כל הכבוד! זאת האות ' + letter);
+                
                 setTimeout(() => {
                     updateScoreAndEmojis();
                     showVictoryScreen();
-                }, 1000);
+                }, 2500); // Wait longer for speech to finish
             } else {
                 // Wrong answer
                 playFailureSound();
                 event.target.classList.add('incorrect');
+                wrongAttempts++;
                 
-                // Show message that the answer was wrong
-                const messageOverlay = document.createElement('div');
-                messageOverlay.className = 'message-overlay';
-                messageOverlay.textContent = 'תשובה לא נכונה!';
-                document.body.appendChild(messageOverlay);
-                
-                setTimeout(() => {
-                    // Remove the message after 1.5 seconds
-                    messageOverlay.style.opacity = '0';
+                if (wrongAttempts >= 2) {
+                    // Second wrong attempt - reveal all post-its
+                    const messageOverlay = document.createElement('div');
+                    messageOverlay.className = 'message-overlay';
+                    messageOverlay.textContent = 'אופס, זה לא נכון';
+                    document.body.appendChild(messageOverlay);
+                    
+                    // Speak the feedback
+                    speakText(letter + '. אופס, זה לא נכון');
+                    
                     setTimeout(() => {
-                        messageOverlay.remove();
-                        // Just reset the game immediately
-                        setupGame();
-                    }, 300);
-                }, 1200);
+                        // Remove the message
+                        messageOverlay.style.opacity = '0';
+                        setTimeout(() => {
+                            messageOverlay.remove();
+                            
+                            // Reveal all post-its
+                            const allPostIts = document.querySelectorAll('.post-it:not(.removed)');
+                            let revealIndex = 0;
+                            
+                            function revealNext() {
+                                if (revealIndex >= allPostIts.length) {
+                                    // All revealed, now tell them what the letter was
+                                    const finalMessage = document.createElement('div');
+                                    finalMessage.className = 'message-overlay';
+                                    finalMessage.textContent = 'הפעם זאת הייתה האות ' + currentLetter;
+                                    document.body.appendChild(finalMessage);
+                                    
+                                    // Speak the letter reveal
+                                    speakText('הפעם זאת הייתה האות ' + currentLetter);
+                                    
+                                    // Start a new game after message
+                                    setTimeout(() => {
+                                        finalMessage.style.opacity = '0';
+                                        setTimeout(() => {
+                                            finalMessage.remove();
+                                            setupGame();
+                                        }, 300);
+                                    }, 3000);
+                                    return;
+                                }
+                                
+                                allPostIts[revealIndex].classList.add('removed');
+                                playPopSound();
+                                revealIndex++;
+                                setTimeout(revealNext, 100);
+                            }
+                            
+                            revealNext();
+                        }, 300);
+                    }, 2000); // Wait longer for speech to finish
+                } else {
+                    // First wrong attempt
+                    const messageOverlay = document.createElement('div');
+                    messageOverlay.className = 'message-overlay';
+                    messageOverlay.textContent = 'אופס, זה לא נכון. נסו שוב';
+                    document.body.appendChild(messageOverlay);
+                    
+                    // Speak the feedback
+                    speakText(letter + '. אופס, זה לא נכון. נסו שוב');
+                    
+                    setTimeout(() => {
+                        // Remove the message after speech finishes
+                        messageOverlay.style.opacity = '0';
+                        setTimeout(() => {
+                            messageOverlay.remove();
+                            isGameActive = true; // Re-enable game to let them try again
+                        }, 300);
+                    }, 3000); // Wait longer for speech to finish
+                }
             }
         }
 
@@ -578,6 +677,7 @@
         function setupGame() {
             isGameActive = true;
             removedTiles = 0;
+            wrongAttempts = 0;
             
             // Remove any try again buttons that might exist
             const tryAgainButton = document.querySelector('.options-container .primary-button');
@@ -636,15 +736,19 @@
                         }
                     }, 150);
                     
-                    // If 3 clicks within 5 seconds, remove the post-it
-                    if (this.clickCount >= 3) {
+                    // Update visual feedback based on click count
+                    if (this.clickCount === 1) {
+                        this.classList.add('click-1');
+                        playTapSound();
+                    } else if (this.clickCount === 2) {
+                        this.classList.remove('click-1');
+                        this.classList.add('click-2');
+                        playTapSound();
+                    } else if (this.clickCount >= 3) {
                         this.classList.add('removed');
                         removedTiles++;
                         updateRemovedTilesCounter();
                         playPopSound();
-                    } else {
-                        // Play a lighter tap sound for intermediate clicks
-                        playTapSound();
                     }
                     
 
@@ -701,6 +805,11 @@
             document.addEventListener('click', initAudio, { once: true });
             loadSavedEmojis();
             setupGame();
+            
+            // Play instructions after a short delay
+            setTimeout(() => {
+                speakText('להסרת הפתקית יש ללחוץ שלוש פעמים מהר');
+            }, 1000);
             
             document.getElementById('play-again').addEventListener('click', setupGame);
         });
