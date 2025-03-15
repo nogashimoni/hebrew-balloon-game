@@ -87,7 +87,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: min(350px, 70vw);
+            font-size: min(500px, 80vw);
             color: #333;
             z-index: 1;
             font-weight: bold;
@@ -115,17 +115,7 @@
             position: relative;
         }
         
-        .post-it .click-counter {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 20px;
-            font-weight: bold;
-            color: rgba(0, 0, 0, 0.7);
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
+
         .post-it:hover {
             transform: scale(0.97);
             box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
@@ -167,6 +157,27 @@
         .option-button.incorrect {
             background: #FFB6C1;
             border-color: #FF69B4;
+        }
+        
+        /* Message styling */
+        .message-overlay {
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            font-size: 28px;
+            text-align: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -60%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
         }
         #victory {
             display: none;
@@ -449,7 +460,7 @@
         }
 
         // Handle option button click
-        function handleOptionClick(letter) {
+        function handleOptionClick(letter, event) {
             if (!isGameActive) return;
             
             const options = document.querySelectorAll('.option-button');
@@ -469,41 +480,21 @@
                 playFailureSound();
                 event.target.classList.add('incorrect');
                 
-                // Highlight the correct option
-                options.forEach(option => {
-                    if (option.textContent === currentLetter) {
-                        option.classList.add('correct');
-                    }
-                });
+                // Show message that the answer was wrong
+                const messageOverlay = document.createElement('div');
+                messageOverlay.className = 'message-overlay';
+                messageOverlay.textContent = 'תשובה לא נכונה!';
+                document.body.appendChild(messageOverlay);
                 
                 setTimeout(() => {
-                    // Remove more post-its as penalty
-                    const remainingPostIts = document.querySelectorAll('.post-it:not(.removed)');
-                    let penalty = Math.min(5, remainingPostIts.length);
-                    
-                    function revealOneByOne(index) {
-                        if (index >= penalty) {
-                            setTimeout(() => {
-                                updateScoreAndEmojis();
-                                showVictoryScreen();
-                            }, 500);
-                            return;
-                        }
-                        
-                        if (remainingPostIts[index]) {
-                            remainingPostIts[index].classList.add('removed');
-                            removedTiles++;
-                            updateRemovedTilesCounter();
-                            playPopSound();
-                            
-                            setTimeout(() => {
-                                revealOneByOne(index + 1);
-                            }, 200);
-                        }
-                    }
-                    
-                    revealOneByOne(0);
-                }, 1500);
+                    // Remove the message after 1.5 seconds
+                    messageOverlay.style.opacity = '0';
+                    setTimeout(() => {
+                        messageOverlay.remove();
+                        // Just reset the game immediately
+                        setupGame();
+                    }, 300);
+                }, 1200);
             }
         }
 
@@ -588,6 +579,12 @@
             isGameActive = true;
             removedTiles = 0;
             
+            // Remove any try again buttons that might exist
+            const tryAgainButton = document.querySelector('.options-container .primary-button');
+            if (tryAgainButton) {
+                tryAgainButton.remove();
+            }
+            
             // Select a random Hebrew letter
             currentLetter = hebrewLetters[Math.floor(Math.random() * hebrewLetters.length)];
             
@@ -616,11 +613,7 @@
                 postIt.clickCount = 0;
                 postIt.clickTimestamps = [];
                 
-                // Create click counter display
-                const clickCounter = document.createElement('div');
-                clickCounter.className = 'click-counter';
-                clickCounter.textContent = '0/3';
-                postIt.appendChild(clickCounter);
+
                 
                 postIt.addEventListener('click', function() {
                     if (!isGameActive || this.classList.contains('removed')) return;
@@ -632,11 +625,8 @@
                     // Only keep timestamps from the last 5 seconds
                     this.clickTimestamps = this.clickTimestamps.filter(timestamp => now - timestamp < 5000);
                     
-                    // Update click count and display
+                    // Update click count
                     this.clickCount = this.clickTimestamps.length;
-                    const counter = this.querySelector('.click-counter');
-                    counter.textContent = `${this.clickCount}/3`;
-                    counter.style.opacity = '1';
                     
                     // Make post-it pulse on click
                     this.style.transform = 'scale(0.95)';
@@ -657,12 +647,7 @@
                         playTapSound();
                     }
                     
-                    // Hide the counter after 1 second if not enough clicks
-                    setTimeout(() => {
-                        if (!this.classList.contains('removed')) {
-                            counter.style.opacity = '0';
-                        }
-                    }, 1000);
+
                 });
                 
                 grid.appendChild(postIt);
