@@ -115,7 +115,7 @@
             position: relative;
         }
         
-        .post-it::before, .post-it::after {
+        .post-it::before, .post-it::after, .post-it .layer-3, .post-it .layer-4 {
             content: '';
             position: absolute;
             top: 0;
@@ -123,20 +123,48 @@
             width: 100%;
             height: 100%;
             background: linear-gradient(135deg, #FFEB3B, #FFC107);
-            z-index: 1;
-            transition: opacity 0.2s ease;
+            transition: opacity 0.15s ease;
         }
         
         .post-it::before {
-            z-index: 2;
+            z-index: 5;
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .post-it::after {
+            z-index: 4;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.08);
+        }
+        
+        .post-it .layer-3 {
+            z-index: 3;
+        }
+        
+        .post-it .layer-4 {
+            z-index: 2;
         }
         
         .post-it.click-1::before {
             opacity: 0;
         }
         
-        .post-it.click-2::before, .post-it.click-2::after {
+        .post-it.click-2::before {
+            opacity: 0;
+        }
+        
+        .post-it.click-2::after {
+            opacity: 0;
+        }
+        
+        .post-it.click-3::before, .post-it.click-3::after {
+            opacity: 0;
+        }
+        
+        .post-it.click-3 .layer-3 {
+            opacity: 0;
+        }
+        
+        .post-it.click-4::before, .post-it.click-4::after, .post-it.click-4 .layer-3, .post-it.click-4 .layer-4 {
             opacity: 0;
         }
         
@@ -300,18 +328,13 @@
 
     <div id="victory">
         <div class="win-text">כל הכבוד!</div>
-        <div id="scoreDetails">ניחשת נכון עם <span id="removedCount">0</span> פתקיות שהוסרו</div>
+        <div id="scoreDetails">ניחשת נכון!</div>
         <button id="play-again">שחק שוב</button>
     </div>
 
     <div class="game-container">
         <h1>נחשו את האות המסתתרת</h1>
-        <div class="score-display">
-            פתקיות שהוסרו: <span id="removedTiles">0</span> / 25
-            <div class="progress-container">
-                <div class="progress-bar" id="progressBar"></div>
-            </div>
-        </div>
+
 
         <div class="letter-container">
             <div class="hidden-letter"></div>
@@ -519,81 +542,50 @@
                     showVictoryScreen();
                 }, 2500); // Wait longer for speech to finish
             } else {
-                // Wrong answer
+                // Wrong answer - no retry
                 playFailureSound();
                 event.target.classList.add('incorrect');
-                wrongAttempts++;
                 
-                if (wrongAttempts >= 2) {
-                    // Second wrong attempt - reveal all post-its
-                    const messageOverlay = document.createElement('div');
-                    messageOverlay.className = 'message-overlay';
-                    messageOverlay.textContent = 'אופס, זה לא נכון';
-                    document.body.appendChild(messageOverlay);
-                    
-                    // Speak the feedback
-                    speakText(letter + '. אופס, זה לא נכון');
-                    
-                    setTimeout(() => {
-                        // Remove the message
-                        messageOverlay.style.opacity = '0';
+                // Reveal the correct letter
+                options.forEach(option => {
+                    if (option.textContent === currentLetter) {
+                        option.classList.add('correct');
+                    }
+                });
+                
+                // Reveal all post-its immediately
+                const allPostIts = document.querySelectorAll('.post-it:not(.removed)');
+                let revealIndex = 0;
+                
+                function revealNext() {
+                    if (revealIndex >= allPostIts.length) {
+                        // All revealed, now tell them what the letter was
+                        const finalMessage = document.createElement('div');
+                        finalMessage.className = 'message-overlay';
+                        finalMessage.textContent = 'הפעם זאת הייתה האות ' + currentLetter;
+                        document.body.appendChild(finalMessage);
+                        
+                        // Speak the letter reveal
+                        speakText('הפעם זאת הייתה האות ' + currentLetter);
+                        
+                        // Start a new game after message
                         setTimeout(() => {
-                            messageOverlay.remove();
-                            
-                            // Reveal all post-its
-                            const allPostIts = document.querySelectorAll('.post-it:not(.removed)');
-                            let revealIndex = 0;
-                            
-                            function revealNext() {
-                                if (revealIndex >= allPostIts.length) {
-                                    // All revealed, now tell them what the letter was
-                                    const finalMessage = document.createElement('div');
-                                    finalMessage.className = 'message-overlay';
-                                    finalMessage.textContent = 'הפעם זאת הייתה האות ' + currentLetter;
-                                    document.body.appendChild(finalMessage);
-                                    
-                                    // Speak the letter reveal
-                                    speakText('הפעם זאת הייתה האות ' + currentLetter);
-                                    
-                                    // Start a new game after message
-                                    setTimeout(() => {
-                                        finalMessage.style.opacity = '0';
-                                        setTimeout(() => {
-                                            finalMessage.remove();
-                                            setupGame();
-                                        }, 300);
-                                    }, 3000);
-                                    return;
-                                }
-                                
-                                allPostIts[revealIndex].classList.add('removed');
-                                playPopSound();
-                                revealIndex++;
-                                setTimeout(revealNext, 100);
-                            }
-                            
-                            revealNext();
-                        }, 300);
-                    }, 2000); // Wait longer for speech to finish
-                } else {
-                    // First wrong attempt
-                    const messageOverlay = document.createElement('div');
-                    messageOverlay.className = 'message-overlay';
-                    messageOverlay.textContent = 'אופס, זה לא נכון. נסו שוב';
-                    document.body.appendChild(messageOverlay);
+                            finalMessage.style.opacity = '0';
+                            setTimeout(() => {
+                                finalMessage.remove();
+                                setupGame();
+                            }, 300);
+                        }, 3000);
+                        return;
+                    }
                     
-                    // Speak the feedback
-                    speakText(letter + '. אופס, זה לא נכון. נסו שוב');
-                    
-                    setTimeout(() => {
-                        // Remove the message after speech finishes
-                        messageOverlay.style.opacity = '0';
-                        setTimeout(() => {
-                            messageOverlay.remove();
-                            isGameActive = true; // Re-enable game to let them try again
-                        }, 300);
-                    }, 3000); // Wait longer for speech to finish
+                    allPostIts[revealIndex].classList.add('removed');
+                    playPopSound();
+                    revealIndex++;
+                    setTimeout(revealNext, 100);
                 }
+                
+                revealNext();
             }
         }
 
@@ -665,12 +657,9 @@
             localStorage.setItem('collectedEmojis', JSON.stringify(Array.from(collectedEmojis)));
         }
 
-        // Update the removed tiles counter and progress bar
+        // Function kept empty but still called to maintain game functionality
         function updateRemovedTilesCounter() {
-            document.getElementById('removedTiles').textContent = removedTiles;
-            const progressBar = document.getElementById('progressBar');
-            const progress = (removedTiles / 25) * 100;
-            progressBar.style.width = `${progress}%`;
+            // Counter display removed
         }
 
         // Set up a new game
@@ -679,11 +668,7 @@
             removedTiles = 0;
             wrongAttempts = 0;
             
-            // Remove any try again buttons that might exist
-            const tryAgainButton = document.querySelector('.options-container .primary-button');
-            if (tryAgainButton) {
-                tryAgainButton.remove();
-            }
+            // No retry buttons needed anymore
             
             // Select a random Hebrew letter
             currentLetter = hebrewLetters[Math.floor(Math.random() * hebrewLetters.length)];
@@ -709,6 +694,18 @@
                 const lightness = 70 + Math.random() * 10;
                 postIt.style.background = `hsl(${hue}, 90%, ${lightness}%)`;
                 
+                // Add extra layers for visual effect
+                const layer3 = document.createElement('div');
+                layer3.className = 'layer-3';
+                layer3.style.background = `hsl(${hue}, 90%, ${lightness}%)`;
+                
+                const layer4 = document.createElement('div');
+                layer4.className = 'layer-4';
+                layer4.style.background = `hsl(${hue}, 90%, ${lightness}%)`;
+                
+                postIt.appendChild(layer3);
+                postIt.appendChild(layer4);
+                
                 // Track clicks for each post-it
                 postIt.clickCount = 0;
                 postIt.clickTimestamps = [];
@@ -722,8 +719,8 @@
                     const now = Date.now();
                     this.clickTimestamps.push(now);
                     
-                    // Only keep timestamps from the last 5 seconds
-                    this.clickTimestamps = this.clickTimestamps.filter(timestamp => now - timestamp < 5000);
+                    // Only keep timestamps from the last 3 seconds (making it more challenging)
+                    this.clickTimestamps = this.clickTimestamps.filter(timestamp => now - timestamp < 3000);
                     
                     // Update click count
                     this.clickCount = this.clickTimestamps.length;
@@ -744,7 +741,15 @@
                         this.classList.remove('click-1');
                         this.classList.add('click-2');
                         playTapSound();
-                    } else if (this.clickCount >= 3) {
+                    } else if (this.clickCount === 3) {
+                        this.classList.remove('click-2');
+                        this.classList.add('click-3');
+                        playTapSound();
+                    } else if (this.clickCount === 4) {
+                        this.classList.remove('click-3');
+                        this.classList.add('click-4');
+                        playTapSound();
+                    } else if (this.clickCount >= 5) {
                         this.classList.add('removed');
                         removedTiles++;
                         updateRemovedTilesCounter();
@@ -772,7 +777,7 @@
                 optionsContainer.appendChild(button);
             });
             
-            // Reset removed tiles counter
+            // Reset game state
             updateRemovedTilesCounter();
             
             // Hide victory screen
@@ -808,7 +813,7 @@
             
             // Play instructions after a short delay
             setTimeout(() => {
-                speakText('להסרת הפתקית יש ללחוץ שלוש פעמים מהר');
+                speakText('להסרת הפתקית יש ללחוץ חמש פעמים מהר מאוד');
             }, 1000);
             
             document.getElementById('play-again').addEventListener('click', setupGame);
