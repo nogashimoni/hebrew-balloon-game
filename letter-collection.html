@@ -609,9 +609,9 @@
             playGameOverSound();
         }
 
-        function showToySelection() {
+        function handleToySelection() {
             // Use the shared toy selection component with a callback to update the victory screen
-            window.showToySelection(toySelected, null);
+            showToySelection(toySelected, null);
             
             function toySelected(toy) {
                 // Update victory screen with the selected toy
@@ -630,7 +630,7 @@
             playVictorySound();
             
             // Show toy selection
-            showToySelection();
+            handleToySelection();
         }
 
         // Start the game
