@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>משחק האות הנסתרת</title>
-    <script src="emoji-selection.js"></script>
+    <script src="toy-selection.js"></script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600&display=swap" rel="stylesheet">
     <style>
@@ -539,7 +539,8 @@
                 
                 setTimeout(() => {
                     updateScoreAndEmojis();
-                    showVictoryScreen();
+                    // Removed showVictoryScreen call here
+                    setupGame(); // Start a new game automatically
                 }, 2500); // Wait longer for speech to finish
             } else {
                 // Wrong answer - no retry
@@ -612,6 +613,23 @@
         // Update score and collected emojis
         function updateScoreAndEmojis() {
             const slots = document.querySelectorAll('.treasure-slot');
+            
+            // Check if all slots are already filled before adding a new emoji
+            let allSlotsFilled = true;
+            for (let i = 0; i < slots.length; i++) {
+                if (slots[i].textContent === '⭐') {
+                    allSlotsFilled = false;
+                    break;
+                }
+            }
+            
+            if (allSlotsFilled) {
+                // All slots are already filled - show toy selection immediately
+                handleToySelection();
+                return;
+            }
+            
+            // Not all slots are filled yet, so add a new emoji
             const newEmoji = getRandomEmojis();
             collectedEmojis.add(newEmoji);
             
@@ -623,14 +641,51 @@
                     break;
                 }
             }
+            
+            // Check if now all slots are filled after adding this emoji
+            allSlotsFilled = true;
+            for (let i = 0; i < slots.length; i++) {
+                if (slots[i].textContent === '⭐') {
+                    allSlotsFilled = false;
+                    break;
+                }
+            }
+            
+            // If all slots are now filled, show toy selection
+            if (allSlotsFilled) {
+                // All emojis collected - show celebration and then toy selection
+                setTimeout(() => {
+                    const finalMessage = document.createElement('div');
+                    finalMessage.className = 'message-overlay';
+                    finalMessage.style.fontSize = '28px';
+                    finalMessage.textContent = 'כל הכבוד! אספת את כל הצעצועים! 🎉';
+                    document.body.appendChild(finalMessage);
+                    
+                    // Speak the victory message
+                    speakText('כל הכבוד! אספת את כל הצעצועים!');
+                    
+                    // Play special sound
+                    playMagicalSound();
+                    
+                    // Show toy selection after celebration
+                    setTimeout(() => {
+                        finalMessage.style.opacity = '0';
+                        setTimeout(() => {
+                            finalMessage.remove();
+                            // Show toy selection using shared component
+                            handleToySelection();
+                        }, 300);
+                    }, 3000);
+                }, 500);
+            }
+            
+            // Save collected emojis to localStorage
+            localStorage.setItem('collectedEmojis', JSON.stringify(Array.from(collectedEmojis)));
         }
 
         // Show victory screen
         function showVictoryScreen() {
             const victoryScreen = document.getElementById('victory');
-            const removedCountElement = document.getElementById('removedCount');
-            
-            removedCountElement.textContent = removedTiles;
             
             // Display different message based on performance
             const winTextElement = document.querySelector('.win-text');
@@ -653,8 +708,7 @@
             // Play victory sound
             playMagicalSound();
             
-            // Save collected emojis to localStorage
-            localStorage.setItem('collectedEmojis', JSON.stringify(Array.from(collectedEmojis)));
+            // (Moved to updateScoreAndEmojis function)
         }
 
         // Function kept empty but still called to maintain game functionality
@@ -789,22 +843,66 @@
             try {
                 const saved = localStorage.getItem('collectedEmojis');
                 if (saved) {
-                    collectedEmojis = new Set(JSON.parse(saved));
+                    const parsedData = JSON.parse(saved);
                     
-                    // Update treasure box with saved emojis
-                    const slots = document.querySelectorAll('.treasure-slot');
-                    const emojisArray = Array.from(collectedEmojis);
-                    
-                    for (let i = 0; i < Math.min(emojisArray.length, slots.length); i++) {
-                        slots[i].textContent = emojisArray[i];
-                        slots[i].style.background = 'rgba(255,255,255,0.6)';
+                    // Check if data is valid
+                    if (Array.isArray(parsedData)) {
+                        collectedEmojis = new Set(parsedData);
+                        
+                        // Update treasure box with saved emojis
+                        const slots = document.querySelectorAll('.treasure-slot');
+                        const emojisArray = Array.from(collectedEmojis);
+                        
+                        // Reset all slots first
+                        slots.forEach(slot => {
+                            slot.textContent = '⭐';
+                            slot.style.background = 'rgba(255,255,255,0.2)';
+                        });
+                        
+                        // Fill slots with saved emojis
+                        for (let i = 0; i < Math.min(emojisArray.length, slots.length); i++) {
+                            slots[i].textContent = emojisArray[i];
+                            slots[i].style.background = 'rgba(255,255,255,0.6)';
+                        }
+                    } else {
+                        // Invalid data - reset
+                        collectedEmojis = new Set();
+                        localStorage.setItem('collectedEmojis', JSON.stringify([]));
                     }
                 }
             } catch (e) {
                 console.error('Error loading saved emojis', e);
+                // Reset on error
+                collectedEmojis = new Set();
+                localStorage.setItem('collectedEmojis', JSON.stringify([]));
             }
         }
 
+        // Function that uses the shared toy selection system
+        function handleToySelection() {
+            // Use the shared toy selection component
+            showToySelection(toySelected, null);
+            
+            // Callback when a toy is selected
+            function toySelected(toy) {
+                // Reset collection
+                collectedEmojis.clear();
+                
+                // Reset treasure box
+                const slots = document.querySelectorAll('.treasure-slot');
+                slots.forEach(slot => {
+                    slot.textContent = '⭐';
+                    slot.style.background = 'rgba(255,255,255,0.2)';
+                });
+                
+                // Save cleared state
+                localStorage.setItem('collectedEmojis', JSON.stringify([]));
+                
+                // Start a new game
+                setupGame();
+            }
+        }
+        
         // Start the game
         document.addEventListener('DOMContentLoaded', () => {
             document.addEventListener('click', initAudio, { once: true });
