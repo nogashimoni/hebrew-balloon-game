@@ -1,0 +1,13 @@
+{
+  "name": "hebrew-balloon-game",
+  "version": "1.0.0",
+  "description": "Hebrew learning games for children",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "jest-environment-jsdom": "^29.5.0"
+  }
+}
